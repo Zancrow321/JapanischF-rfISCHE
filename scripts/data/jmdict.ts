@@ -190,44 +190,55 @@ export function buildN5(rows: string[][], entries: JmdictEntry[]): { words: N5Wo
   return { words, missing };
 }
 
-/** Katakana → Hiragana (für den Vergleich von On-Lesungen mit JMdict-Lesungen). */
-const hira = (s: string) => s.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
-
 type KanjiReadings = { c: string; on: string[]; kun: string[]; meaningsEn: string[] };
 
-const STOP = new Set(['to', 'the', 'a', 'an', 'of', 'be', 'in', 'on', 'for', 'and', 'or', 'one', 'counter', 'something', 'someone', 'etc']);
-const words = (texts: string[]) =>
-  new Set(texts.flatMap((t) => t.toLowerCase().split(/[^a-z]+/)).filter((w) => w.length > 1 && !STOP.has(w)));
+/** Englischer Begriff in Grundform: klein, ohne Klammern und ohne "to " (to see → see). */
+export const normEnglish = (e: string) =>
+  e
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, '')
+    .replace(/^to\s+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 /**
- * Deutsche Bedeutungen für einzelne Kanji aus JMdict. Die deutschen Einträge sind bei einzelnen
- * Kanji oft über gleichlautende Wörter vermischt (本 もと → „Zutat“ von 素), deshalb gilt ein
- * Eintrag nur, wenn das Kanji seine Hauptschreibweise ist und seine englische Übersetzung zur
- * englischen Kanji-Bedeutung aus KANJIDIC2 passt. Danach zählen Hauptlesung und Häufigkeit.
- * Ohne passenden Eintrag bleibt das Kanji ohne deutsche Bedeutung (die App zeigt dann Englisch).
+ * Englisch → Deutsch aus ganz JMdict: welche deutschen Übersetzungen stehen wie oft in Einträgen
+ * mit diesem englischen Begriff? Einzelne falsche Zuordnungen fallen dabei nicht ins Gewicht.
+ */
+export function englishToGerman(entries: JmdictEntry[]): Map<string, Map<string, number>> {
+  const map = new Map<string, Map<string, number>>();
+  for (const e of entries) {
+    for (const en of new Set((e.english ?? []).map(normEnglish))) {
+      if (!en) continue;
+      let counts = map.get(en);
+      if (!counts) map.set(en, (counts = new Map()));
+      for (const de of e.german) counts.set(de, (counts.get(de) ?? 0) + 1);
+    }
+  }
+  return map;
+}
+
+/**
+ * Deutsche Bedeutungen für Kanji: die englischen Bedeutungen aus KANJIDIC2 werden über JMdict
+ * übersetzt (two → zwei). Direkte JMdict-Einträge einzelner Kanji sind dafür zu unzuverlässig,
+ * weil ihre deutschen Übersetzungen oft von gleichlautenden Wörtern stammen (三 み → „Schlange“).
+ * Nur Übersetzungen, die in mindestens zwei Einträgen vorkommen; sonst bleibt Englisch.
  */
 export function germanForKanji(kanji: KanjiReadings[], entries: JmdictEntry[]): Map<string, string[]> {
-  const byChar = new Map(kanji.map((k) => [k.c, { k, en: words(k.meaningsEn) }]));
-  const best = new Map<string, { e: JmdictEntry; score: number }>();
-  for (const e of entries) {
-    const c = e.kanji[0];
-    const hit = c ? byChar.get(c) : undefined;
-    if (!hit) continue;
-    const { k, en } = hit;
-    const overlap = [...words(e.english ?? [])].filter((w) => en.has(w)).length;
-    if (overlap === 0) continue;
-    // Reihenfolge der Lesungen: On-Lesungen zuerst (wie in KANJIDIC2), dann Kun ohne Okurigana.
-    const readings = [...k.on.map(hira), ...k.kun.map((r) => r.split('.')[0].replace(/-/g, ''))];
-    const pos = e.readings.reduce((m, r) => {
-      const i = readings.indexOf(r);
-      return i >= 0 ? Math.min(m, i) : m;
-    }, 99);
-    // Nur eine Schreibweise = der Eintrag gehört sicher zu diesem Kanji.
-    const score = (e.common ? 0 : 100_000) + (e.kanji.length === 1 ? 0 : 50_000) - overlap * 2000 + pos * 1000 + e.rank;
-    const current = best.get(c);
-    if (!current || score < current.score) best.set(c, { e, score });
-  }
+  const enDe = englishToGerman(entries);
   const result = new Map<string, string[]>();
-  for (const [c, { e }] of best) result.set(c, rankGlosses(e.german).slice(0, 3));
+  for (const k of kanji) {
+    const german: string[] = [];
+    for (const en of k.meaningsEn.slice(0, 4)) {
+      const counts = enDe.get(normEnglish(en));
+      if (!counts) continue;
+      const best = [...counts.entries()]
+        .filter(([de, n]) => n >= 2 && !/…|z\.\s?B\./.test(de))
+        .sort((a, b) => b[1] - a[1] || a[0].length - b[0].length)[0];
+      if (best && !german.some((g) => g.toLowerCase() === best[0].toLowerCase())) german.push(best[0]);
+      if (german.length >= 3) break;
+    }
+    if (german.length > 0) result.set(k.c, german);
+  }
   return result;
 }
