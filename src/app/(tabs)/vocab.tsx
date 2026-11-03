@@ -108,6 +108,8 @@ export default function VocabScreen() {
                   aria-label={`${l.name} lernen`}
                   trackColor={{ true: theme.accent, false: theme.border }}
                   thumbColor="#ffffff"
+                  // Im Browser gilt für den eingeschalteten Zustand eine eigene Farbe.
+                  {...({ activeThumbColor: "#ffffff" } as object)}
                 />
               </View>
             </View>
