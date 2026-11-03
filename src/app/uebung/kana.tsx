@@ -8,6 +8,7 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { ALL_KANA, type Kana } from '@/data/kana';
+import { charHref } from '@/data/lookup';
 import { getCards, saveReview } from '@/db/reviews';
 import { useSelection } from '@/hooks/use-selection';
 import { useTheme } from '@/hooks/use-theme';
@@ -277,6 +278,7 @@ function Feedback({
       </ThemedText>
       <View style={styles.feedbackButtons}>
         <Button label="🔊 Anhören" variant="secondary" onPress={() => speakJapanese(kana.char)} />
+        <Button label="✎ Schreiben" variant="secondary" onPress={() => router.push(charHref(kana.char))} />
         <Button label="Weiter" onPress={onNext} />
       </View>
     </View>
@@ -385,5 +387,5 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   feedback: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.two },
-  feedbackButtons: { flexDirection: 'row', gap: Spacing.two, justifyContent: 'flex-end' },
+  feedbackButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, justifyContent: 'flex-end' },
 });

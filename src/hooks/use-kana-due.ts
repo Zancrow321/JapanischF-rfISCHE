@@ -10,7 +10,7 @@ import type { StoredCard } from '@/learn/srs';
 import { useSelection } from './use-selection';
 
 /** Wie viele ausgewählte Kana heute dran sind; wird bei jedem Öffnen des Bildschirms neu geladen. */
-export function useKanaDue() {
+export function useKanaDue(mode: string = KANA_MODE) {
   const db = useSQLiteContext();
   const { active } = useSelection();
   const [loadedCards, setLoadedCards] = useState<{ cards: Map<string, StoredCard>; at: number }>({
@@ -21,13 +21,13 @@ export function useKanaDue() {
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      getCards(db, KANA_MODE).then((c) => {
+      getCards(db, mode).then((c) => {
         if (!cancelled) setLoadedCards({ cards: c, at: Date.now() });
       });
       return () => {
         cancelled = true;
       };
-    }, [db]),
+    }, [db, mode]),
   );
 
   return useMemo(() => {

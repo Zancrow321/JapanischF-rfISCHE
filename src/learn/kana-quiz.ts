@@ -3,6 +3,7 @@ import type { Kana } from '@/data/kana';
 import type { StoredCard } from './srs';
 
 export const KANA_MODE = 'kana-lesen';
+export const KANA_WRITE_MODE = 'kana-schreiben';
 
 export type QuestionType = 'tippen' | 'lesung-waehlen' | 'hoeren';
 

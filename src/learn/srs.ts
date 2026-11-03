@@ -62,15 +62,22 @@ export function gradeFor(correct: boolean): Grade {
   return correct ? Rating.Good : Rating.Again;
 }
 
-/** Berechnet den neuen Lernstand nach einer Antwort. */
+/** Bewertung einer Schreibübung: fehlerfrei = „Gut“, 1–2 Fehler = „Schwer“, mehr = „Nochmal“. */
+export function gradeForWriting(mistakes: number): Grade {
+  if (mistakes === 0) return Rating.Good;
+  if (mistakes <= 2) return Rating.Hard;
+  return Rating.Again;
+}
+
+/** Berechnet den neuen Lernstand nach einer Antwort (richtig/falsch oder direkte Bewertung). */
 export function reviewCard(
   itemId: string,
   mode: string,
   stored: StoredCard | undefined,
-  correct: boolean,
+  answer: boolean | Grade,
   now: Date,
 ): { card: StoredCard; grade: Grade } {
-  const grade = gradeFor(correct);
+  const grade = typeof answer === 'boolean' ? gradeFor(answer) : answer;
   const next = scheduler.next(toFsrsCard(stored, now), now, grade);
   return { card: fromFsrsCard(itemId, mode, next.card), grade };
 }

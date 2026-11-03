@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable } from 'react-native';
 
@@ -6,6 +7,7 @@ import { GroupSection } from '@/components/group-section';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { displayReading, KANJI, kanjiGroupsByGrade, kanjiItemId } from '@/data/kanji';
+import { charHref } from '@/data/lookup';
 import { useSelection } from '@/hooks/use-selection';
 
 /** Große Gruppen erst auf Wunsch ganz anzeigen, damit der Bildschirm schnell bleibt. */
@@ -30,7 +32,7 @@ export default function KanjiScreen() {
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
         Alle {KANJI.length} Jōyō-Kanji, sortiert nach Schuljahr und Häufigkeit. Tippe an, was du
-        gerade lernst.
+        gerade lernst. Lange drücken zeigt Strichreihenfolge und Schreibübung.
       </ThemedText>
       {kanjiGroupsByGrade().map((group) => {
         const ids = group.items.map(kanjiItemId);
@@ -50,6 +52,7 @@ export default function KanjiScreen() {
                 caption={displayReading(k.kun[0] ?? k.on[0] ?? '').slice(0, 6)}
                 active={active.has(kanjiItemId(k))}
                 onPress={() => toggle(kanjiItemId(k))}
+                    onLongPress={() => router.push(charHref(k.c))}
               />
             ))}
             {!isOpen && group.items.length > PREVIEW ? (
