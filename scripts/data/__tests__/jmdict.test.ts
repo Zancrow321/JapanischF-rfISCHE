@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { buildDictionary, buildN5, parseCsv, parseJmdict, splitForms } from '../jmdict.ts';
+import { buildDictionary, buildN5, parseCsv, parseJmdict, rankGlosses, splitForms } from '../jmdict.ts';
 
 const xml = readFileSync(path.join(__dirname, 'fixtures/jmdict-sample.xml'), 'utf8');
 
@@ -57,5 +57,13 @@ describe('N5-Liste', () => {
       ['会う', 'あう', 'treffen|begegnen'],
     ]);
     expect(missing).toEqual(['知らない']);
+  });
+});
+
+describe('rankGlosses', () => {
+  it('stellt kurze, klare Übersetzungen nach vorne und kürzt auf vier', () => {
+    expect(
+      rankGlosses(['geraten in … (z.B. ein Unwetter)', 'kommen in', 'haben (z.B. einen Unfall)', 'treffen', 'begegnen', 'sehen'])
+    ).toEqual(['kommen in', 'treffen', 'begegnen', 'sehen']);
   });
 });

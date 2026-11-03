@@ -167,7 +167,7 @@ function WordForm({
   // Vorschläge nur, solange die Lesung noch leer ist (danach ist das Wort gewählt).
   const [showSuggestions, setShowSuggestions] = useState(!editing);
   const suggestions = useMemo(
-    () => (showSuggestions && form.german.trim().length >= 2 ? searchDictionary(form.german, 6) : []),
+    () => (showSuggestions && form.german.trim().length >= 2 ? searchDictionary(form.german, 8) : []),
     [form.german, showSuggestions],
   );
   const reading = toReading(form.kana);

@@ -112,15 +112,28 @@ export function splitForms(value: string): string[] {
     .filter(Boolean);
 }
 
-/** Maximal so viele Übersetzungen pro Wort speichern (die ersten sind die wichtigsten). */
+/** Maximal so viele Übersetzungen pro Wort speichern. */
 const MAX_GLOSSES = 4;
+
+/**
+ * Bringt gut lernbare Übersetzungen nach vorne: Einträge mit Auslassung („…“), Beispielen
+ * („z. B.“) oder sehr langen Erklärungen rutschen nach hinten, sonst bleibt die Reihenfolge.
+ */
+export function rankGlosses(glosses: string[]): string[] {
+  const penalty = (g: string) => (/…|\.\.\.|z\.\s?B\./.test(g) ? 2 : 0) + (g.length > 25 ? 1 : 0);
+  return glosses
+    .map((g, i) => ({ g, i, p: penalty(g) }))
+    .sort((a, b) => a.p - b.p || a.i - b.i)
+    .map((x) => x.g)
+    .slice(0, MAX_GLOSSES);
+}
 
 /** Wörterbuch für die Vorschläge: nur gebräuchliche Wörter, häufige zuerst. */
 export function buildDictionary(entries: JmdictEntry[]): DictEntry[] {
   return entries
     .filter((e) => e.common && e.readings.length > 0)
     .sort((a, b) => a.rank - b.rank)
-    .map((e) => [e.kanji[0] ?? '', e.readings[0], e.german.slice(0, MAX_GLOSSES).join('|'), e.rank] as DictEntry);
+    .map((e) => [e.kanji[0] ?? '', e.readings[0], rankGlosses(e.german).join('|'), e.rank] as DictEntry);
 }
 
 /**
@@ -168,7 +181,7 @@ export function buildN5(rows: string[][], entries: JmdictEntry[]): { words: N5Wo
     const key = `${best.written}|${best.reading}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    words.push([best.written, best.reading, best.e.german.slice(0, MAX_GLOSSES).join('|')]);
+    words.push([best.written, best.reading, rankGlosses(best.e.german).join('|')]);
   }
   return { words, missing };
 }
