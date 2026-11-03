@@ -8,10 +8,12 @@ type Props = {
   caption?: string;
   active: boolean;
   onPress: () => void;
+  /** Langes Drücken öffnet die Zeichenseite */
+  onLongPress?: () => void;
 };
 
 /** Ein Schriftzeichen zum Antippen: markiert = wird gelernt. */
-export function CharTile({ char, caption, active, onPress }: Props) {
+export function CharTile({ char, caption, active, onPress, onLongPress }: Props) {
   const theme = useTheme();
   return (
     <Pressable
@@ -19,6 +21,7 @@ export function CharTile({ char, caption, active, onPress }: Props) {
       aria-checked={active}
       aria-label={caption ? `${char} ${caption}` : char}
       onPress={onPress}
+      onLongPress={onLongPress}
       style={({ pressed }) => [
         styles.tile,
         {

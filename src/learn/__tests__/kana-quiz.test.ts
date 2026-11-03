@@ -7,7 +7,7 @@ import {
   pickChoices,
   pickSessionKana,
 } from '../kana-quiz';
-import { reviewCard, type StoredCard } from '../srs';
+import { gradeForWriting, reviewCard, type StoredCard } from '../srs';
 
 const k = (char: string): Kana => ALL_KANA.find((x) => x.char === char)!;
 
@@ -139,5 +139,13 @@ describe('Lernkurve', () => {
     const after = reviewCard('x', 'kana-lesen', stored, false, new Date(stored.due)).card;
     expect(after.lapses).toBe(1);
     expect(after.due - stored.due).toBeLessThan(DAY);
+  });
+});
+
+describe('Bewertung beim Schreiben', () => {
+  it('stuft nach Fehlerzahl ab', () => {
+    expect(gradeForWriting(0)).toBe(3);
+    expect(gradeForWriting(2)).toBe(2);
+    expect(gradeForWriting(3)).toBe(1);
   });
 });
