@@ -1,0 +1,37 @@
+name: Lerndaten erzeugen
+
+# Baut assets/data aus KANJIDIC2 und KanjiVG neu und committet das Ergebnis in denselben Branch.
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'scripts/data/**'
+      - '.github/workflows/data.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run data
+      - run: npm test -- --ci
+      - name: Ergebnis committen
+        run: |
+          git add assets/data src/data/generated
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen an den Lerndaten."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Lerndaten aus KANJIDIC2 und KanjiVG erzeugen"
+          git push
