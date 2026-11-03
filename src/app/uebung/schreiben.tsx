@@ -1,4 +1,4 @@
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -8,10 +8,14 @@ import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { ALL_KANA, type Kana } from '@/data/kana';
+import { displayReading, KANJI, kanjiItemId, kanjiMeanings } from '@/data/kanji';
+import type { KanjiEntry } from '@/data/types';
+import { getMeaningOverrides } from '@/db/meanings';
 import { getCards, saveReview } from '@/db/reviews';
 import { useSelection } from '@/hooks/use-selection';
 import { useTheme } from '@/hooks/use-theme';
 import { KANA_WRITE_MODE, pickSessionKana } from '@/learn/kana-quiz';
+import { KANJI_WRITE_MODE } from '@/learn/kanji-quiz';
 import { gradeForWriting, reviewCard, type StoredCard } from '@/learn/srs';
 import { speakJapanese } from '@/lib/speech';
 import { StrokeAnimation } from '@/writing/stroke-animation';
@@ -20,21 +24,71 @@ import { WritingPad } from '@/writing/writing-pad';
 
 type Outcome = { mistakes: number; gaveUp: boolean };
 
+/** Ein Zeichen zum Schreiben: Kana (Aufgabe = Umschrift) oder Kanji (Aufgabe = Bedeutung). */
+type WriteItem = {
+  id: string;
+  char: string;
+  /** Was groß angezeigt wird */
+  prompt: string;
+  /** Kleiner Zusatz, z. B. Lesung oder Reihe */
+  hint: string;
+  /** Was vorgelesen wird */
+  speak: string;
+  label: string;
+};
+
 type Session =
   | { status: 'loading' }
   | { status: 'empty'; reason: 'nichts-ausgewaehlt' | 'nichts-faellig' }
-  | { status: 'running'; kana: Kana[]; index: number; outcomes: Outcome[] };
+  | { status: 'running'; kana: WriteItem[]; index: number; outcomes: Outcome[] };
+
+function kanaItem(kana: Kana): WriteItem {
+  // Gleiche Lesung bei mehreren Zeichen (z. B. じ/ぢ, ず/づ, お/を): Reihe dazuschreiben.
+  const ambiguous = ALL_KANA.some(
+    (k) => k.id !== kana.id && k.script === kana.script && k.romaji[0] === kana.romaji[0],
+  );
+  return {
+    id: kana.id,
+    char: kana.char,
+    prompt: kana.romaji[0],
+    hint: ambiguous ? `(${kana.groupId.split('-')[1].toUpperCase()}-Reihe)` : '',
+    speak: kana.char,
+    label: kana.script === 'hiragana' ? 'Hiragana' : 'Katakana',
+  };
+}
+
+function kanjiItem(k: KanjiEntry, override: string | undefined): WriteItem {
+  const { meanings, lang } = kanjiMeanings(k, override);
+  const reading = [k.kun[0] ? displayReading(k.kun[0]) : undefined, k.on[0]].filter(Boolean).join(' · ');
+  return {
+    id: kanjiItemId(k),
+    char: k.c,
+    prompt: meanings.slice(0, 2).join(', ') + (lang === 'en' ? ' (engl.)' : ''),
+    hint: reading,
+    speak: k.kun[0] ? displayReading(k.kun[0]) : (k.on[0] ?? k.c),
+    label: `Kanji, ${k.strokes} Striche`,
+  };
+}
 
 export default function WritingQuizScreen() {
   const db = useSQLiteContext();
+  const { art } = useLocalSearchParams<{ art?: string }>();
+  const isKanji = art === 'kanji';
+  const mode = isKanji ? KANJI_WRITE_MODE : KANA_WRITE_MODE;
   const { active, loaded } = useSelection();
   const [session, setSession] = useState<Session>({ status: 'loading' });
   const cards = useRef<Map<string, StoredCard>>(new Map());
 
   async function prepare(extra: boolean): Promise<Session> {
-    const loadedCards = await getCards(db, KANA_WRITE_MODE);
+    const loadedCards = await getCards(db, mode);
     cards.current = loadedCards;
-    const activeKana = ALL_KANA.filter((k) => active.has(k.id));
+    let activeKana: WriteItem[];
+    if (isKanji) {
+      const overrides = await getMeaningOverrides(db);
+      activeKana = KANJI.filter((k) => active.has(kanjiItemId(k))).map((k) => kanjiItem(k, overrides.get(kanjiItemId(k))));
+    } else {
+      activeKana = ALL_KANA.filter((k) => active.has(k.id)).map(kanaItem);
+    }
     if (activeKana.length === 0) return { status: 'empty', reason: 'nichts-ausgewaehlt' };
     // Schreiben dauert länger als Lesen, daher kürzere Runden.
     let picked = pickSessionKana(activeKana, loadedCards, Date.now(), { limit: 10, newLimit: 5 });
@@ -65,11 +119,11 @@ export default function WritingQuizScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded]);
 
-  async function finish(kana: Kana, outcome: Outcome) {
+  async function finish(kana: WriteItem, outcome: Outcome) {
     if (session.status !== 'running') return;
     const now = new Date();
     const grade = outcome.gaveUp ? 1 : gradeForWriting(outcome.mistakes);
-    const { card } = reviewCard(kana.id, KANA_WRITE_MODE, cards.current.get(kana.id), grade, now);
+    const { card } = reviewCard(kana.id, mode, cards.current.get(kana.id), grade, now);
     cards.current.set(kana.id, card);
     setSession({ ...session, outcomes: [...session.outcomes, outcome] });
     await saveReview(db, card, grade, now.getTime());
@@ -77,18 +131,18 @@ export default function WritingQuizScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: true, title: 'Kana schreiben' }} />
+      <Stack.Screen options={{ headerShown: true, title: isKanji ? 'Kanji schreiben' : 'Kana schreiben' }} />
       <Screen>
         {session.status === 'loading' ? <ThemedText>Lade …</ThemedText> : null}
         {session.status === 'empty' ? (
           <View style={styles.block}>
             <ThemedText>
               {session.reason === 'nichts-ausgewaehlt'
-                ? 'Du hast noch keine Kana ausgewählt.'
+                ? `Du hast noch keine ${isKanji ? 'Kanji' : 'Kana'} ausgewählt.`
                 : 'Für heute ist alles geschrieben. Gut gemacht!'}
             </ThemedText>
             {session.reason === 'nichts-ausgewaehlt' ? (
-              <Button label="Kana auswählen" onPress={() => router.replace('/einstellungen')} />
+              <Button label={isKanji ? 'Kanji auswählen' : 'Kana auswählen'} onPress={() => router.replace('/einstellungen')} />
             ) : (
               <Button label="Trotzdem eine Runde schreiben" onPress={() => start(true)} />
             )}
@@ -128,7 +182,7 @@ function WriteQuestion({
   onFinish,
   onNext,
 }: {
-  kana: Kana;
+  kana: WriteItem;
   position: number;
   total: number;
   outcome: Outcome | undefined;
@@ -140,25 +194,20 @@ function WriteQuestion({
   const [part, setPart] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const strokes = useCharStrokes(parts[part]);
-  // Gleiche Lesung bei mehreren Zeichen (z. B. じ/ぢ, ず/づ, お/を): Reihe dazuschreiben.
-  const ambiguous = ALL_KANA.some(
-    (k) => k.id !== kana.id && k.script === kana.script && k.romaji[0] === kana.romaji[0],
-  );
-  const groupLabel = ambiguous ? ` (${kana.groupId.split('-')[1].toUpperCase()}-Reihe)` : '';
 
   useEffect(() => {
-    speakJapanese(kana.char);
-  }, [kana.char]);
+    speakJapanese(kana.speak);
+  }, [kana.speak]);
 
   return (
     <View style={styles.block}>
       <ThemedText type="small" themeColor="textSecondary">
-        {position} / {total} · Schreibe das Zeichen ({kana.script === 'hiragana' ? 'Hiragana' : 'Katakana'})
+        {position} / {total} · Schreibe das Zeichen ({kana.label})
       </ThemedText>
       <View style={styles.promptRow}>
-        <ThemedText style={styles.romaji}>{kana.romaji[0]}</ThemedText>
-        {groupLabel ? <ThemedText themeColor="textSecondary">{groupLabel}</ThemedText> : null}
-        <Button label="🔊" variant="secondary" onPress={() => speakJapanese(kana.char)} />
+        <ThemedText style={kana.prompt.length > 6 ? styles.promptLong : styles.romaji}>{kana.prompt}</ThemedText>
+        {kana.hint ? <ThemedText themeColor="textSecondary">{kana.hint}</ThemedText> : null}
+        <Button label="🔊" variant="secondary" onPress={() => speakJapanese(kana.speak)} />
       </View>
 
       {outcome ? (
@@ -219,8 +268,9 @@ function AnswerAnimation({ char }: { char: string }) {
 const styles = StyleSheet.create({
   block: { gap: Spacing.three },
   center: { alignItems: 'center', gap: Spacing.three },
-  promptRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.three },
+  promptRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: Spacing.three },
   romaji: { fontSize: 48, lineHeight: 60, fontWeight: 600 },
+  promptLong: { fontSize: 28, lineHeight: 36, fontWeight: 600, textAlign: 'center', flexShrink: 1 },
   answerChar: { fontSize: 72, lineHeight: 88, textAlign: 'center' },
   feedback: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.two, alignItems: 'center' },
 });

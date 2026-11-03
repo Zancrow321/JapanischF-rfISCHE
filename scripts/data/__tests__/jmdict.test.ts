@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { buildDictionary, buildN5, parseCsv, parseJmdict, rankGlosses, splitForms } from '../jmdict.ts';
+import { buildDictionary, buildN5, germanForKanji, parseCsv, parseJmdict, rankGlosses, splitForms } from '../jmdict.ts';
 
 const xml = readFileSync(path.join(__dirname, 'fixtures/jmdict-sample.xml'), 'utf8');
 
@@ -13,7 +13,7 @@ describe('parseJmdict', () => {
   });
 
   it('liest Schreibweisen, Lesungen, Bedeutungen und Häufigkeit', () => {
-    expect(entries[0]).toEqual({ kanji: ['水'], readings: ['みず'], german: ['Wasser', 'kaltes Wasser'], common: true, rank: 1 });
+    expect(entries[0]).toEqual({ kanji: ['水'], readings: ['みず'], german: ['Wasser', 'kaltes Wasser'], english: ['water'], common: true, rank: 1 });
     expect(entries[2]).toMatchObject({ kanji: [], common: true, rank: 50 });
     expect(entries[3]).toMatchObject({ german: ['seltenes Wort & mehr'], common: false, rank: 99 });
   });
@@ -65,5 +65,36 @@ describe('rankGlosses', () => {
     expect(
       rankGlosses(['geraten in … (z.B. ein Unwetter)', 'kommen in', 'haben (z.B. einen Unfall)', 'treffen', 'begegnen', 'sehen'])
     ).toEqual(['kommen in', 'treffen', 'begegnen', 'sehen']);
+  });
+});
+
+describe('germanForKanji', () => {
+  const entry = (english: string[], german: string[]) => ({ kanji: [], readings: ['x'], german, english, common: true, rank: 1 });
+  const ENTRIES = [
+    entry(['two'], ['zwei', 'Eingeweide']),
+    entry(['two'], ['zwei']),
+    entry(['two (things)'], ['zwei Stück']),
+    entry(['to see', 'to look'], ['sehen', 'schauen']),
+    entry(['to see'], ['sehen']),
+    entry(['snake'], ['Schlange']),
+    entry(['five'], ['5', 'fünf']),
+    entry(['five'], ['5', 'fünf']),
+    entry(['five (things)'], ['5', 'fünf Stück']),
+  ];
+  it('übersetzt die englischen Bedeutungen über JMdict', () => {
+    const m = germanForKanji(
+      [
+        { c: '二', on: ['ニ'], kun: ['ふた'], meaningsEn: ['two'] },
+        { c: '見', on: ['ケン'], kun: ['み.る'], meaningsEn: ['see', 'hopes'] },
+        { c: '巳', on: ['シ'], kun: ['み'], meaningsEn: ['snake'] },
+        { c: '五', on: ['ゴ'], kun: ['いつ'], meaningsEn: ['five'] },
+      ],
+      ENTRIES,
+    );
+    expect(m.get('二')).toEqual(['zwei']);
+    expect(m.get('見')).toEqual(['sehen']);
+    expect(m.get('五')).toEqual(['fünf']);
+    // Nur ein Beleg: zu unsicher, es bleibt Englisch.
+    expect(m.has('巳')).toBe(false);
   });
 });

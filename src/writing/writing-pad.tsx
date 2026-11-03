@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type GestureResponderEvent } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { useScrollLock } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -38,6 +39,10 @@ export function WritingPad({ strokes, showTemplate, size = 300, onComplete }: Pr
 
   const scale = 109 / size;
   const current = useRef<Point[]>([]);
+  const lockScroll = useScrollLock();
+
+  // Falls die Seite mitten im Zeichnen verlassen wird, das Scrollen wieder freigeben.
+  useEffect(() => () => lockScroll(false), [lockScroll]);
   const finished = useRef(false);
 
   useEffect(() => {
@@ -73,7 +78,12 @@ export function WritingPad({ strokes, showTemplate, size = 300, onComplete }: Pr
   };
 
   // Touch- und Mausereignisse über das Responder-System von React Native (Handy und Browser).
+  // Sobald ein Finger das Feld berührt, wird das Scrollen des Bildschirms angehalten, damit
+  // sich beim Zeichnen nichts verschiebt. Außerhalb des Feldes scrollt alles wie gewohnt.
   const touchHandlers = {
+    onTouchStart: () => lockScroll(true),
+    onTouchEnd: () => lockScroll(false),
+    onTouchCancel: () => lockScroll(false),
     onStartShouldSetResponder: () => true,
     onMoveShouldSetResponder: () => true,
     onResponderTerminationRequest: () => false,
@@ -85,7 +95,14 @@ export function WritingPad({ strokes, showTemplate, size = 300, onComplete }: Pr
       current.current = [...current.current, toGrid(e)];
       setDrawing(current.current);
     },
-    onResponderRelease: release,
+    onResponderRelease: () => {
+      lockScroll(false);
+      release();
+    },
+    onResponderTerminate: () => {
+      lockScroll(false);
+      release();
+    },
   };
 
   const showHint = flash !== null || missesOnStroke >= HINT_AFTER;

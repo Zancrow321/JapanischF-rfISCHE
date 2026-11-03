@@ -6,18 +6,20 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { ALL_KANA } from '@/data/kana';
 import { KANJI, kanjiItemId } from '@/data/kanji';
-import { useKanaDue } from '@/hooks/use-kana-due';
+import { useKanaDue, useKanjiDue } from '@/hooks/use-kana-due';
 import { useSelection } from '@/hooks/use-selection';
 import { useStats } from '@/hooks/use-stats';
 import { useTheme } from '@/hooks/use-theme';
 import { useVocabOverview } from '@/hooks/use-vocab';
 import { KANA_WRITE_MODE } from '@/learn/kana-quiz';
+import { KANJI_MODE } from '@/learn/kanji-quiz';
 
 export default function StartScreen() {
   const theme = useTheme();
   const { active } = useSelection();
   const readDue = useKanaDue();
   const writeDue = useKanaDue(KANA_WRITE_MODE);
+  const kanjiDue = useKanjiDue(KANJI_MODE);
   const stats = useStats();
   const vocab = useVocabOverview();
   const kanaActive = ALL_KANA.filter((k) => active.has(k.id)).length;
@@ -30,14 +32,19 @@ export default function StartScreen() {
       </ThemedText>
       <ThemedText>Dein Begleiter zum Japanischunterricht.</ThemedText>
 
-      <PracticeCard
-        title="Schriftzeichen lesen"
-        href="/uebung/kana"
-        emptyHint="Wähle in den Einstellungen die Zeichen aus, die du gerade lernst."
-        {...readDue}
-      />
+      {readDue.selected > 0 || kanjiDue.selected === 0 ? (
+        <PracticeCard
+          title="Kana lesen"
+          href="/uebung/kana"
+          emptyHint="Wähle in den Einstellungen die Zeichen aus, die du gerade lernst."
+          {...readDue}
+        />
+      ) : null}
       {readDue.selected > 0 ? (
-        <PracticeCard title="Schriftzeichen schreiben" href="/uebung/schreiben" emptyHint="" {...writeDue} />
+        <PracticeCard title="Kana schreiben" href="/uebung/schreiben" emptyHint="" {...writeDue} />
+      ) : null}
+      {kanjiDue.selected > 0 ? (
+        <PracticeCard title="Kanji" href="/uebung/kanji" emptyHint="" {...kanjiDue} />
       ) : null}
       <PracticeCard
         title="Vokabeln"

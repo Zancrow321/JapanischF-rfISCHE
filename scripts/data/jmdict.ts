@@ -10,6 +10,8 @@ export type JmdictEntry = {
   kanji: string[];
   readings: string[];
   german: string[];
+  /** Englische Übersetzungen, zum Gegenprüfen der Kanji-Bedeutungen */
+  english?: string[];
   /** Hat eine Häufigkeitsmarkierung (news1, ichi1, spec1 …) */
   common: boolean;
   /** Kleinerer Wert = häufiger; aus der nfXX-Markierung, sonst 99 */
@@ -57,6 +59,7 @@ export function parseJmdict(xml: string): JmdictEntry[] {
       if (clean && !german.includes(clean)) german.push(clean);
     }
     if (german.length === 0) continue;
+    const english = [...block.matchAll(/<gloss(?:\s+g_type="[^"]*")?>([\s\S]*?)<\/gloss>/g)].map((g) => decode(g[1]));
 
     const kEle = all(block, 'k_ele');
     const rEle = all(block, 'r_ele');
@@ -66,6 +69,7 @@ export function parseJmdict(xml: string): JmdictEntry[] {
       kanji: kEle.filter((k) => !/<ke_inf>&(iK|oK|rK|sK|ateji);<\/ke_inf>/.test(k)).flatMap((k) => all(k, 'keb')).map(decode),
       readings: rEle.filter((r) => !/<re_inf>&(ik|ok|rk|sk);<\/re_inf>/.test(r)).flatMap((r) => all(r, 'reb')).map(decode),
       german,
+      english,
       common: pri.length > 0,
       rank: rankFrom(pri),
     });
@@ -184,4 +188,59 @@ export function buildN5(rows: string[][], entries: JmdictEntry[]): { words: N5Wo
     words.push([best.written, best.reading, rankGlosses(best.e.german).join('|')]);
   }
   return { words, missing };
+}
+
+type KanjiReadings = { c: string; on: string[]; kun: string[]; meaningsEn: string[] };
+
+/** Englischer Begriff in Grundform: klein, ohne Klammern und ohne "to " (to see → see). */
+export const normEnglish = (e: string) =>
+  e
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, '')
+    .replace(/^to\s+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
+ * Englisch → Deutsch aus ganz JMdict: welche deutschen Übersetzungen stehen wie oft in Einträgen
+ * mit diesem englischen Begriff? Einzelne falsche Zuordnungen fallen dabei nicht ins Gewicht.
+ */
+export function englishToGerman(entries: JmdictEntry[]): Map<string, Map<string, number>> {
+  const map = new Map<string, Map<string, number>>();
+  for (const e of entries) {
+    for (const en of new Set((e.english ?? []).map(normEnglish))) {
+      if (!en) continue;
+      let counts = map.get(en);
+      if (!counts) map.set(en, (counts = new Map()));
+      for (const de of e.german) counts.set(de, (counts.get(de) ?? 0) + 1);
+    }
+  }
+  return map;
+}
+
+/**
+ * Deutsche Bedeutungen für Kanji: die englischen Bedeutungen aus KANJIDIC2 werden über JMdict
+ * übersetzt (two → zwei). Direkte JMdict-Einträge einzelner Kanji sind dafür zu unzuverlässig,
+ * weil ihre deutschen Übersetzungen oft von gleichlautenden Wörtern stammen (三 み → „Schlange“).
+ * Nur Übersetzungen, die in mindestens zwei Einträgen vorkommen; sonst bleibt Englisch.
+ */
+export function germanForKanji(kanji: KanjiReadings[], entries: JmdictEntry[]): Map<string, string[]> {
+  const enDe = englishToGerman(entries);
+  const result = new Map<string, string[]>();
+  for (const k of kanji) {
+    const german: string[] = [];
+    for (const en of k.meaningsEn.slice(0, 4)) {
+      const counts = enDe.get(normEnglish(en));
+      if (!counts) continue;
+      // Einzelwörter bevorzugen (one → „ein“ statt „eine Seite“), Ziffern auslassen (5 → „fünf“).
+      const weight = (de: string, n: number) => (de.includes(' ') ? n / 2 : n);
+      const best = [...counts.entries()]
+        .filter(([de, n]) => n >= 2 && /[a-zäöüß]/i.test(de) && !/…|z\.\s?B\./.test(de))
+        .sort((a, b) => weight(b[0], b[1]) - weight(a[0], a[1]) || a[0].length - b[0].length)[0];
+      if (best && !german.some((g) => g.toLowerCase() === best[0].toLowerCase())) german.push(best[0]);
+      if (german.length >= 3) break;
+    }
+    if (german.length > 0) result.set(k.c, german);
+  }
+  return result;
 }

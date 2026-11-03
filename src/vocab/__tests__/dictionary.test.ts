@@ -1,6 +1,6 @@
 import type { DictEntry } from '@/data/types';
 
-import { normalizeGerman, searchDictionary } from '../dictionary';
+import { examplesFor, normalizeGerman, searchDictionary } from '../dictionary';
 import { allForms, displayWord } from '../script';
 
 const DICT: DictEntry[] = [
@@ -59,5 +59,12 @@ describe('displayWord', () => {
   it('allForms', () => {
     expect(allForms(mizu)).toEqual(['水', 'みず', 'mizu']);
     expect(allForms(kaffee)).toEqual(['コーヒー', 'koohii']);
+  });
+});
+
+describe('examplesFor', () => {
+  it('liefert häufige Wörter mit dem Kanji, ohne das Kanji allein', () => {
+    expect(examplesFor('水', 8, DICT).map((s) => s.written)).toEqual(['水泳', '水曜日', '洪水']);
+    expect(examplesFor('水', 1, DICT)).toHaveLength(1);
   });
 });
