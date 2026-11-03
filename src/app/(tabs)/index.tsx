@@ -1,15 +1,16 @@
 import { StyleSheet, View } from 'react-native';
 
+import { PracticeCard } from '@/components/practice-card';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { ALL_KANA } from '@/data/kana';
 import { KANJI } from '@/data/kanji';
+import { useKanaDue } from '@/hooks/use-kana-due';
 import { useSelection } from '@/hooks/use-selection';
 import { useTheme } from '@/hooks/use-theme';
 
 const ROADMAP = [
-  { title: 'Kana lesen', text: 'Hiragana und Katakana abfragen, mit Aussprache.', stage: 2 },
   { title: 'Schreiben üben', text: 'Strichreihenfolge ansehen und nachzeichnen.', stage: 3 },
   { title: 'Vokabeln', text: 'JLPT N5 und eigene Listen aus dem Unterricht.', stage: 4 },
   { title: 'Kanji', text: 'Lesungen, Bedeutungen und Schreiben.', stage: 5 },
@@ -18,6 +19,7 @@ const ROADMAP = [
 export default function StartScreen() {
   const theme = useTheme();
   const { active } = useSelection();
+  const kanaDue = useKanaDue();
   const kanaActive = ALL_KANA.filter((k) => active.has(k.id)).length;
   const kanjiActive = KANJI.filter((k) => active.has(`kanji:${k.c}`)).length;
 
@@ -27,6 +29,13 @@ export default function StartScreen() {
         日本語
       </ThemedText>
       <ThemedText>Dein Begleiter zum Japanischunterricht.</ThemedText>
+
+      <PracticeCard
+        title="Kana üben"
+        href="/uebung/kana"
+        emptyHint="Wähle im Tab „Kana“ die Zeichen aus, die du gerade lernst."
+        {...kanaDue}
+      />
 
       <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
         <ThemedText type="smallBold">Deine Auswahl</ThemedText>

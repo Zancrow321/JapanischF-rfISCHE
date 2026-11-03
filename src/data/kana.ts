@@ -17,6 +17,7 @@ export type Kana = {
   /** Erste Schreibweise = Hepburn, weitere werden beim Abfragen auch akzeptiert. */
   romaji: string[];
   groupId: string;
+  category: KanaCategory;
 };
 
 export type KanaGroup = {
@@ -97,6 +98,7 @@ function buildGroups(script: KanaScript, rows: Row[], convert: (s: string) => st
           script,
           romaji: Array.isArray(romaji) ? romaji : [romaji],
           groupId,
+          category: row.category,
         };
       }),
     };
