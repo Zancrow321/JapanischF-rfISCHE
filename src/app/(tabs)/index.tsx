@@ -10,6 +10,7 @@ import { useKanaDue } from '@/hooks/use-kana-due';
 import { useSelection } from '@/hooks/use-selection';
 import { useStats } from '@/hooks/use-stats';
 import { useTheme } from '@/hooks/use-theme';
+import { useVocabOverview } from '@/hooks/use-vocab';
 import { KANA_WRITE_MODE } from '@/learn/kana-quiz';
 
 export default function StartScreen() {
@@ -18,6 +19,7 @@ export default function StartScreen() {
   const readDue = useKanaDue();
   const writeDue = useKanaDue(KANA_WRITE_MODE);
   const stats = useStats();
+  const vocab = useVocabOverview();
   const kanaActive = ALL_KANA.filter((k) => active.has(k.id)).length;
   const kanjiActive = KANJI.filter((k) => active.has(kanjiItemId(k))).length;
 
@@ -37,6 +39,12 @@ export default function StartScreen() {
       {readDue.selected > 0 ? (
         <PracticeCard title="Schriftzeichen schreiben" href="/uebung/schreiben" emptyHint="" {...writeDue} />
       ) : null}
+      <PracticeCard
+        title="Vokabeln"
+        href={{ pathname: '/uebung/vokabeln', params: { richtung: 'de-ja' } }}
+        emptyHint="Lege im Tab Vokabeln eine Liste an, dann kannst du hier üben."
+        {...vocab.deJa}
+      />
 
       <ThemedText type="smallBold">Dein Fortschritt</ThemedText>
       <View style={styles.statsRow}>

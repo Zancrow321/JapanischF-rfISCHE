@@ -26,15 +26,15 @@ function shuffle<T>(items: T[], rng: Rng): T[] {
 }
 
 /**
- * Wählt die Karten für eine Runde: zuerst fällige (älteste zuerst), dann neue Zeichen
- * in Tabellenreihenfolge. Nicht ausgewählte Zeichen kommen nie dran.
+ * Wählt die Karten für eine Runde: zuerst fällige (älteste zuerst), dann neue in der
+ * gegebenen Reihenfolge. Nicht ausgewählte Inhalte kommen nie dran. Gilt für Zeichen und Vokabeln.
  */
-export function pickSessionKana(
-  activeKana: Kana[],
+export function pickSessionKana<T extends { id: string }>(
+  activeKana: T[],
   cards: Map<string, StoredCard>,
   now: number,
   { limit = 20, newLimit = 10 } = {},
-): Kana[] {
+): T[] {
   const due = activeKana
     .filter((k) => {
       const c = cards.get(k.id);
@@ -45,8 +45,8 @@ export function pickSessionKana(
   return [...due, ...fresh].slice(0, limit);
 }
 
-/** Zählt, wie viele Zeichen heute dran sind (fällig oder noch nie geübt). */
-export function countDue(activeKana: Kana[], cards: Map<string, StoredCard>, now: number) {
+/** Zählt, wie viele Karten heute dran sind (fällig oder noch nie geübt). */
+export function countDue(activeKana: { id: string }[], cards: Map<string, StoredCard>, now: number) {
   let due = 0;
   let fresh = 0;
   for (const k of activeKana) {
