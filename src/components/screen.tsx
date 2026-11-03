@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type PropsWithChildren } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -20,6 +20,11 @@ export function Screen({ children }: PropsWithChildren) {
     <ScrollLockContext.Provider value={setLocked}>
       <ScrollView
         scrollEnabled={!locked}
+        // Die Tastatur verdeckt keine Eingabefelder: auf dem iPhone rückt die Seite selbst nach oben,
+        // auf Android verkleinert sich das Fenster (Standard bei Expo).
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
         style={{ backgroundColor: theme.background }}
         contentContainerStyle={styles.outer}>
         <View style={styles.inner}>{children}</View>
