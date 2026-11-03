@@ -88,7 +88,7 @@ export default function WritingQuizScreen() {
                 : 'Für heute ist alles geschrieben. Gut gemacht!'}
             </ThemedText>
             {session.reason === 'nichts-ausgewaehlt' ? (
-              <Button label="Kana auswählen" onPress={() => router.replace('/kana')} />
+              <Button label="Kana auswählen" onPress={() => router.replace('/einstellungen')} />
             ) : (
               <Button label="Trotzdem eine Runde schreiben" onPress={() => start(true)} />
             )}

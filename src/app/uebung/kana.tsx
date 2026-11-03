@@ -127,7 +127,7 @@ function EmptyState({
     return (
       <View style={styles.block}>
         <ThemedText>Du hast noch keine Kana ausgewählt.</ThemedText>
-        <Button label="Kana auswählen" onPress={() => router.replace('/kana')} />
+        <Button label="Kana auswählen" onPress={() => router.replace('/einstellungen')} />
       </View>
     );
   }

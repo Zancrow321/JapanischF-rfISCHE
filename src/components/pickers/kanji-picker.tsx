@@ -4,7 +4,6 @@ import { Pressable } from 'react-native';
 
 import { CharTile } from '@/components/char-tile';
 import { GroupSection } from '@/components/group-section';
-import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { displayReading, KANJI, kanjiGroupsByGrade, kanjiItemId } from '@/data/kanji';
 import { charHref } from '@/data/lookup';
@@ -13,26 +12,27 @@ import { useSelection } from '@/hooks/use-selection';
 /** Große Gruppen erst auf Wunsch ganz anzeigen, damit der Bildschirm schnell bleibt. */
 const PREVIEW = 40;
 
-export default function KanjiScreen() {
+/** Auswahl der Kanji, die gelernt werden, nach Schuljahr gruppiert. */
+export function KanjiPicker() {
   const { active, toggle, setMany } = useSelection();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   if (KANJI.length === 0) {
     return (
-      <Screen>
+      <>
         <ThemedText>
           Die Kanji-Daten sind noch nicht erzeugt. Sie werden mit „npm run data“ aus KANJIDIC2 und
           KanjiVG gebaut.
         </ThemedText>
-      </Screen>
+      </>
     );
   }
 
   return (
-    <Screen>
+    <>
       <ThemedText type="small" themeColor="textSecondary">
         Alle {KANJI.length} Jōyō-Kanji, sortiert nach Schuljahr und Häufigkeit. Tippe an, was du
-        gerade lernst. Lange drücken zeigt Strichreihenfolge und Schreibübung.
+        gerade lernst.
       </ThemedText>
       {kanjiGroupsByGrade().map((group) => {
         const ids = group.items.map(kanjiItemId);
@@ -67,6 +67,6 @@ export default function KanjiScreen() {
           </GroupSection>
         );
       })}
-    </Screen>
+    </>
   );
 }

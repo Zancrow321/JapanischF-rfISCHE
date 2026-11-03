@@ -15,6 +15,8 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: theme.accent,
         tabBarInactiveTintColor: theme.textSecondary,
+        tabBarLabelStyle: { fontSize: 10, lineHeight: 14 },
+        tabBarItemStyle: { paddingHorizontal: 0 },
         tabBarStyle: { backgroundColor: theme.background, borderTopColor: theme.border },
         headerStyle: { backgroundColor: theme.background },
         headerTintColor: theme.text,
@@ -24,20 +26,20 @@ export default function TabLayout() {
         options={{ title: 'Start', tabBarIcon: ({ color }) => <TabIcon glyph="家" color={color} /> }}
       />
       <Tabs.Screen
-        name="kana"
-        options={{ title: 'Kana', tabBarIcon: ({ color }) => <TabIcon glyph="あ" color={color} /> }}
-      />
-      <Tabs.Screen
-        name="kanji"
-        options={{ title: 'Kanji', tabBarIcon: ({ color }) => <TabIcon glyph="漢" color={color} /> }}
-      />
-      <Tabs.Screen
         name="vocab"
         options={{ title: 'Vokabeln', tabBarIcon: ({ color }) => <TabIcon glyph="語" color={color} /> }}
       />
       <Tabs.Screen
-        name="progress"
-        options={{ title: 'Fortschritt', tabBarIcon: ({ color }) => <TabIcon glyph="進" color={color} /> }}
+        name="zeichen"
+        options={{ title: 'Schriftzeichen', tabBarLabel: 'Zeichen', tabBarIcon: ({ color }) => <TabIcon glyph="字" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="schreiben"
+        options={{ title: 'Schreiben', tabBarIcon: ({ color }) => <TabIcon glyph="書" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="einstellungen"
+        options={{ title: 'Einstellungen', tabBarIcon: ({ color }) => <TabIcon glyph="⚙" color={color} /> }}
       />
     </Tabs>
   );

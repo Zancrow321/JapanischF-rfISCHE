@@ -4,7 +4,10 @@ import { ThemedText } from '@/components/themed-text';
 export default function VokabelnScreen() {
   return (
     <Screen>
-      <ThemedText>Hier kommen in Etappe 4 die JLPT-N5-Vokabeln und deine eigenen Listen aus dem Unterricht hin.</ThemedText>
+      <ThemedText>
+        Hier kommen als Nächstes deine eigenen Vokabeln hin: Wort auf Deutsch eingeben, die App
+        schlägt Lesung und Schreibweise auf Japanisch vor.
+      </ThemedText>
     </Screen>
   );
 }
