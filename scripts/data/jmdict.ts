@@ -10,6 +10,8 @@ export type JmdictEntry = {
   kanji: string[];
   readings: string[];
   german: string[];
+  /** Englische Übersetzungen, zum Gegenprüfen der Kanji-Bedeutungen */
+  english?: string[];
   /** Hat eine Häufigkeitsmarkierung (news1, ichi1, spec1 …) */
   common: boolean;
   /** Kleinerer Wert = häufiger; aus der nfXX-Markierung, sonst 99 */
@@ -57,6 +59,7 @@ export function parseJmdict(xml: string): JmdictEntry[] {
       if (clean && !german.includes(clean)) german.push(clean);
     }
     if (german.length === 0) continue;
+    const english = [...block.matchAll(/<gloss(?:\s+g_type="[^"]*")?>([\s\S]*?)<\/gloss>/g)].map((g) => decode(g[1]));
 
     const kEle = all(block, 'k_ele');
     const rEle = all(block, 'r_ele');
@@ -66,6 +69,7 @@ export function parseJmdict(xml: string): JmdictEntry[] {
       kanji: kEle.filter((k) => !/<ke_inf>&(iK|oK|rK|sK|ateji);<\/ke_inf>/.test(k)).flatMap((k) => all(k, 'keb')).map(decode),
       readings: rEle.filter((r) => !/<re_inf>&(ik|ok|rk|sk);<\/re_inf>/.test(r)).flatMap((r) => all(r, 'reb')).map(decode),
       german,
+      english,
       common: pri.length > 0,
       rank: rankFrom(pri),
     });
@@ -189,30 +193,39 @@ export function buildN5(rows: string[][], entries: JmdictEntry[]): { words: N5Wo
 /** Katakana → Hiragana (für den Vergleich von On-Lesungen mit JMdict-Lesungen). */
 const hira = (s: string) => s.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
 
-type KanjiReadings = { c: string; on: string[]; kun: string[] };
+type KanjiReadings = { c: string; on: string[]; kun: string[]; meaningsEn: string[] };
+
+const STOP = new Set(['to', 'the', 'a', 'an', 'of', 'be', 'in', 'on', 'for', 'and', 'or', 'one', 'counter', 'something', 'someone', 'etc']);
+const words = (texts: string[]) =>
+  new Set(texts.flatMap((t) => t.toLowerCase().split(/[^a-z]+/)).filter((w) => w.length > 1 && !STOP.has(w)));
 
 /**
- * Deutsche Bedeutungen für einzelne Kanji: aus dem JMdict-Eintrag, der nur aus diesem Kanji
- * besteht (z. B. 水 → Wasser). Es gewinnt ein gebräuchlicher Eintrag, dessen Lesung eine
- * Hauptlesung des Kanji ist (本 → ほん „Buch“, nicht もと „Ursprung“), dann der häufigste.
+ * Deutsche Bedeutungen für einzelne Kanji aus JMdict. Die deutschen Einträge sind bei einzelnen
+ * Kanji oft über gleichlautende Wörter vermischt (本 もと → „Zutat“ von 素), deshalb gilt ein
+ * Eintrag nur, wenn das Kanji seine Hauptschreibweise ist und seine englische Übersetzung zur
+ * englischen Kanji-Bedeutung aus KANJIDIC2 passt. Danach zählen Hauptlesung und Häufigkeit.
+ * Ohne passenden Eintrag bleibt das Kanji ohne deutsche Bedeutung (die App zeigt dann Englisch).
  */
 export function germanForKanji(kanji: KanjiReadings[], entries: JmdictEntry[]): Map<string, string[]> {
-  const byChar = new Map(kanji.map((k) => [k.c, k]));
+  const byChar = new Map(kanji.map((k) => [k.c, { k, en: words(k.meaningsEn) }]));
   const best = new Map<string, { e: JmdictEntry; score: number }>();
   for (const e of entries) {
-    for (const c of e.kanji) {
-      const k = byChar.get(c);
-      if (!k) continue;
-      // Reihenfolge der Lesungen: On-Lesungen zuerst (wie in KANJIDIC2), dann Kun ohne Okurigana.
-      const readings = [...k.on.map(hira), ...k.kun.map((r) => r.split('.')[0].replace(/-/g, ''))];
-      const pos = e.readings.reduce((m, r) => {
-        const i = readings.indexOf(r);
-        return i >= 0 ? Math.min(m, i) : m;
-      }, 99);
-      const score = (e.common ? 0 : 100_000) + pos * 1000 + e.rank;
-      const current = best.get(c);
-      if (!current || score < current.score) best.set(c, { e, score });
-    }
+    const c = e.kanji[0];
+    const hit = c ? byChar.get(c) : undefined;
+    if (!hit) continue;
+    const { k, en } = hit;
+    const overlap = [...words(e.english ?? [])].filter((w) => en.has(w)).length;
+    if (overlap === 0) continue;
+    // Reihenfolge der Lesungen: On-Lesungen zuerst (wie in KANJIDIC2), dann Kun ohne Okurigana.
+    const readings = [...k.on.map(hira), ...k.kun.map((r) => r.split('.')[0].replace(/-/g, ''))];
+    const pos = e.readings.reduce((m, r) => {
+      const i = readings.indexOf(r);
+      return i >= 0 ? Math.min(m, i) : m;
+    }, 99);
+    // Nur eine Schreibweise = der Eintrag gehört sicher zu diesem Kanji.
+    const score = (e.common ? 0 : 100_000) + (e.kanji.length === 1 ? 0 : 50_000) - overlap * 2000 + pos * 1000 + e.rank;
+    const current = best.get(c);
+    if (!current || score < current.score) best.set(c, { e, score });
   }
   const result = new Map<string, string[]>();
   for (const [c, { e }] of best) result.set(c, rankGlosses(e.german).slice(0, 3));

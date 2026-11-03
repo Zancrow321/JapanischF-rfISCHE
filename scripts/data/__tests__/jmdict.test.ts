@@ -13,7 +13,7 @@ describe('parseJmdict', () => {
   });
 
   it('liest Schreibweisen, Lesungen, Bedeutungen und Häufigkeit', () => {
-    expect(entries[0]).toEqual({ kanji: ['水'], readings: ['みず'], german: ['Wasser', 'kaltes Wasser'], common: true, rank: 1 });
+    expect(entries[0]).toEqual({ kanji: ['水'], readings: ['みず'], german: ['Wasser', 'kaltes Wasser'], english: ['water'], common: true, rank: 1 });
     expect(entries[2]).toMatchObject({ kanji: [], common: true, rank: 50 });
     expect(entries[3]).toMatchObject({ german: ['seltenes Wort & mehr'], common: false, rank: 99 });
   });
@@ -70,8 +70,11 @@ describe('rankGlosses', () => {
 
 describe('germanForKanji', () => {
   it('nimmt den Eintrag, der nur aus dem Kanji besteht', () => {
-    const k = (c: string, on: string[], kun: string[]) => ({ c, on, kun });
-    const m = germanForKanji([k('水', ['スイ'], ['みず']), k('会', ['カイ'], ['あ.う']), k('火', ['カ'], ['ひ'])], parseJmdict(xml));
+    const k = (c: string, on: string[], kun: string[], meaningsEn: string[]) => ({ c, on, kun, meaningsEn });
+    const m = germanForKanji(
+      [k('水', ['スイ'], ['みず'], ['water']), k('会', ['カイ'], ['あ.う'], ['meeting']), k('火', ['カ'], ['ひ'], ['fire'])],
+      parseJmdict(xml),
+    );
     expect(m.get('水')).toEqual(['Wasser', 'kaltes Wasser']);
     expect(m.has('会')).toBe(false);
     expect(m.has('火')).toBe(false);
@@ -79,10 +82,17 @@ describe('germanForKanji', () => {
 });
 
 it('germanForKanji bevorzugt gebräuchliche Einträge mit Hauptlesung', () => {
-  const entry = (readings: string[], german: string, common: boolean, rank: number) => ({ kanji: ['本'], readings, german: [german], common, rank });
+  const entry = (kanji: string[], readings: string[], german: string, english: string, common: boolean, rank: number) => ({
+    kanji, readings, german: [german], english: [english], common, rank,
+  });
   const m = germanForKanji(
-    [{ c: '本', on: ['ホン'], kun: ['もと'] }],
-    [entry(['もと'], 'Ursprung', true, 20), entry(['ほん'], 'Buch', true, 30), entry(['ほん'], 'selten', false, 1)],
+    [{ c: '本', on: ['ホン'], kun: ['もと'], meaningsEn: ['book', 'present', 'main', 'origin'] }],
+    [
+      entry(['元', '本', '素'], ['もと'], 'Zutat', 'origin', true, 5),
+      entry(['本'], ['ほん'], 'Buch', 'book', true, 30),
+      entry(['本'], ['ほん'], 'selten', 'book', false, 1),
+      entry(['本'], ['ほん'], 'falsch', 'wann', true, 1),
+    ],
   );
   expect(m.get('本')).toEqual(['Buch']);
 });
