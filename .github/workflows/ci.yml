@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Wird vom Workflow "Lerndaten erzeugen" gestartet, weil dessen Commit sonst keine Prüfung bekommt.
+  workflow_dispatch:
 
 jobs:
   check:

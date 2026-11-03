@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build-data:
@@ -35,3 +36,7 @@ jobs:
           git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
           git commit -m "Lerndaten aus KANJIDIC2, KanjiVG und JMdict erzeugen"
           git push
+          # Pushes mit dem GITHUB_TOKEN starten keine Workflows, daher CI für den neuen Commit von Hand starten.
+          gh workflow run ci.yml --ref "${GITHUB_REF_NAME}" || echo "CI konnte nicht gestartet werden (geht erst, wenn ci.yml auf main liegt)."
+        env:
+          GH_TOKEN: ${{ github.token }}

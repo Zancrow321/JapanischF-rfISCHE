@@ -186,21 +186,35 @@ export function buildN5(rows: string[][], entries: JmdictEntry[]): { words: N5Wo
   return { words, missing };
 }
 
+/** Katakana → Hiragana (für den Vergleich von On-Lesungen mit JMdict-Lesungen). */
+const hira = (s: string) => s.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+
+type KanjiReadings = { c: string; on: string[]; kun: string[] };
+
 /**
  * Deutsche Bedeutungen für einzelne Kanji: aus dem JMdict-Eintrag, der nur aus diesem Kanji
- * besteht (z. B. 水 → Wasser). Bei mehreren Einträgen gewinnt der häufigste.
+ * besteht (z. B. 水 → Wasser). Es gewinnt ein gebräuchlicher Eintrag, dessen Lesung eine
+ * Hauptlesung des Kanji ist (本 → ほん „Buch“, nicht もと „Ursprung“), dann der häufigste.
  */
-export function germanForKanji(chars: string[], entries: JmdictEntry[]): Map<string, string[]> {
-  const wanted = new Set(chars);
-  const best = new Map<string, JmdictEntry>();
+export function germanForKanji(kanji: KanjiReadings[], entries: JmdictEntry[]): Map<string, string[]> {
+  const byChar = new Map(kanji.map((k) => [k.c, k]));
+  const best = new Map<string, { e: JmdictEntry; score: number }>();
   for (const e of entries) {
-    for (const k of e.kanji) {
-      if (!wanted.has(k)) continue;
-      const current = best.get(k);
-      if (!current || e.rank < current.rank) best.set(k, e);
+    for (const c of e.kanji) {
+      const k = byChar.get(c);
+      if (!k) continue;
+      // Reihenfolge der Lesungen: On-Lesungen zuerst (wie in KANJIDIC2), dann Kun ohne Okurigana.
+      const readings = [...k.on.map(hira), ...k.kun.map((r) => r.split('.')[0].replace(/-/g, ''))];
+      const pos = e.readings.reduce((m, r) => {
+        const i = readings.indexOf(r);
+        return i >= 0 ? Math.min(m, i) : m;
+      }, 99);
+      const score = (e.common ? 0 : 100_000) + pos * 1000 + e.rank;
+      const current = best.get(c);
+      if (!current || score < current.score) best.set(c, { e, score });
     }
   }
   const result = new Map<string, string[]>();
-  for (const [c, e] of best) result.set(c, rankGlosses(e.german).slice(0, 3));
+  for (const [c, { e }] of best) result.set(c, rankGlosses(e.german).slice(0, 3));
   return result;
 }

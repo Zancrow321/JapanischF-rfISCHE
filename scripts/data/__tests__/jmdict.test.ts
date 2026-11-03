@@ -70,9 +70,19 @@ describe('rankGlosses', () => {
 
 describe('germanForKanji', () => {
   it('nimmt den Eintrag, der nur aus dem Kanji besteht', () => {
-    const m = germanForKanji(['水', '会', '火'], parseJmdict(xml));
+    const k = (c: string, on: string[], kun: string[]) => ({ c, on, kun });
+    const m = germanForKanji([k('水', ['スイ'], ['みず']), k('会', ['カイ'], ['あ.う']), k('火', ['カ'], ['ひ'])], parseJmdict(xml));
     expect(m.get('水')).toEqual(['Wasser', 'kaltes Wasser']);
     expect(m.has('会')).toBe(false);
     expect(m.has('火')).toBe(false);
   });
+});
+
+it('germanForKanji bevorzugt gebräuchliche Einträge mit Hauptlesung', () => {
+  const entry = (readings: string[], german: string, common: boolean, rank: number) => ({ kanji: ['本'], readings, german: [german], common, rank });
+  const m = germanForKanji(
+    [{ c: '本', on: ['ホン'], kun: ['もと'] }],
+    [entry(['もと'], 'Ursprung', true, 20), entry(['ほん'], 'Buch', true, 30), entry(['ほん'], 'selten', false, 1)],
+  );
+  expect(m.get('本')).toEqual(['Buch']);
 });

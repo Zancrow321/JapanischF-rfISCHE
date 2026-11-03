@@ -141,7 +141,7 @@ async function main() {
 
     console.log('JMdict laden …');
     const entries = parseJmdict(await loadJmdictXml());
-    const german = germanForKanji(kanji.map((k) => k.c), entries);
+    const german = germanForKanji(kanji, entries);
     for (const k of kanji) k.meaningsDe = german.get(k.c) ?? [];
     console.log(`  Deutsche Bedeutung für ${german.size} von ${kanji.length} Kanji`);
 
