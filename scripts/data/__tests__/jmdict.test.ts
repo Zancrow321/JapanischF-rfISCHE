@@ -77,6 +77,9 @@ describe('germanForKanji', () => {
     entry(['to see', 'to look'], ['sehen', 'schauen']),
     entry(['to see'], ['sehen']),
     entry(['snake'], ['Schlange']),
+    entry(['five'], ['5', 'fünf']),
+    entry(['five'], ['5', 'fünf']),
+    entry(['five (things)'], ['5', 'fünf Stück']),
   ];
   it('übersetzt die englischen Bedeutungen über JMdict', () => {
     const m = germanForKanji(
@@ -84,11 +87,13 @@ describe('germanForKanji', () => {
         { c: '二', on: ['ニ'], kun: ['ふた'], meaningsEn: ['two'] },
         { c: '見', on: ['ケン'], kun: ['み.る'], meaningsEn: ['see', 'hopes'] },
         { c: '巳', on: ['シ'], kun: ['み'], meaningsEn: ['snake'] },
+        { c: '五', on: ['ゴ'], kun: ['いつ'], meaningsEn: ['five'] },
       ],
       ENTRIES,
     );
     expect(m.get('二')).toEqual(['zwei']);
     expect(m.get('見')).toEqual(['sehen']);
+    expect(m.get('五')).toEqual(['fünf']);
     // Nur ein Beleg: zu unsicher, es bleibt Englisch.
     expect(m.has('巳')).toBe(false);
   });

@@ -232,9 +232,11 @@ export function germanForKanji(kanji: KanjiReadings[], entries: JmdictEntry[]): 
     for (const en of k.meaningsEn.slice(0, 4)) {
       const counts = enDe.get(normEnglish(en));
       if (!counts) continue;
+      // Einzelwörter bevorzugen (one → „ein“ statt „eine Seite“), Ziffern auslassen (5 → „fünf“).
+      const weight = (de: string, n: number) => (de.includes(' ') ? n / 2 : n);
       const best = [...counts.entries()]
-        .filter(([de, n]) => n >= 2 && !/…|z\.\s?B\./.test(de))
-        .sort((a, b) => b[1] - a[1] || a[0].length - b[0].length)[0];
+        .filter(([de, n]) => n >= 2 && /[a-zäöüß]/i.test(de) && !/…|z\.\s?B\./.test(de))
+        .sort((a, b) => weight(b[0], b[1]) - weight(a[0], a[1]) || a[0].length - b[0].length)[0];
       if (best && !german.some((g) => g.toLowerCase() === best[0].toLowerCase())) german.push(best[0]);
       if (german.length >= 3) break;
     }
