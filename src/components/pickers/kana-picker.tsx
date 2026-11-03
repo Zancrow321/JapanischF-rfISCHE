@@ -1,48 +1,23 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
 
 import { CharTile } from '@/components/char-tile';
 import { GroupSection } from '@/components/group-section';
-import { PracticeCard } from '@/components/practice-card';
-import { Screen } from '@/components/screen';
-import { Segmented } from '@/components/segmented';
 import { ThemedText } from '@/components/themed-text';
 import { CATEGORY_LABELS, kanaGroupsFor, type KanaCategory, type KanaScript } from '@/data/kana';
-import { useKanaDue } from '@/hooks/use-kana-due';
-import { KANA_WRITE_MODE } from '@/learn/kana-quiz';
 import { charHref } from '@/data/lookup';
 import { useSelection } from '@/hooks/use-selection';
 
 const CATEGORIES: KanaCategory[] = ['basis', 'dakuten', 'yoon', 'erweitert'];
 
-export default function KanaScreen() {
-  const [script, setScript] = useState<KanaScript>('hiragana');
+/** Auswahl der Hiragana oder Katakana, die gelernt werden. */
+export function KanaPicker({ script }: { script: KanaScript }) {
   const { active, toggle, setMany } = useSelection();
   const groups = kanaGroupsFor(script);
-  const kanaDue = useKanaDue();
-  const writeDue = useKanaDue(KANA_WRITE_MODE);
 
   return (
-    <Screen>
-      <PracticeCard
-        title="Lesen üben"
-        href="/uebung/kana"
-        emptyHint="Markiere unten Zeichen, dann kannst du sie hier üben."
-        {...kanaDue}
-      />
-      {kanaDue.selected > 0 ? (
-        <PracticeCard title="Schreiben üben" href="/uebung/schreiben" emptyHint="" {...writeDue} />
-      ) : null}
-      <Segmented
-        value={script}
-        onChange={setScript}
-        options={[
-          { value: 'hiragana', label: 'Hiragana' },
-          { value: 'katakana', label: 'Katakana' },
-        ]}
-      />
+    <>
       <ThemedText type="small" themeColor="textSecondary">
-        Tippe Zeichen an, die du gerade lernst. Nur markierte Zeichen werden abgefragt. Lange drücken zeigt Strichreihenfolge und Schreibübung.
+        Tippe die Zeichen an, die du gerade lernst. Nur markierte Zeichen kommen in „Schriftzeichen“ und „Schreiben“ dran.
       </ThemedText>
 
       {CATEGORIES.map((category) => {
@@ -76,6 +51,6 @@ export default function KanaScreen() {
           }),
         ];
       })}
-    </Screen>
+    </>
   );
 }

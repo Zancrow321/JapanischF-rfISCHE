@@ -18,11 +18,11 @@ import { WritingPad } from '@/writing/writing-pad';
 type Mode = 'ansehen' | 'nachzeichnen' | 'gedaechtnis';
 
 export default function CharScreen() {
-  const { char: raw } = useLocalSearchParams<{ char: string }>();
+  const { char: raw, modus } = useLocalSearchParams<{ char: string; modus?: string }>();
   const text = decodeURIComponent(raw ?? '');
   const info = lookupChar(text);
   const theme = useTheme();
-  const [mode, setMode] = useState<Mode>('ansehen');
+  const [mode, setMode] = useState<Mode>(modus === 'nachzeichnen' || modus === 'gedaechtnis' ? modus : 'ansehen');
   // Kombinationen wie きゃ bestehen aus zwei Zeichen, die nacheinander geschrieben werden.
   const parts = Array.from(text);
   const [partIndex, setPartIndex] = useState(0);
