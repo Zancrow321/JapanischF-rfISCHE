@@ -82,6 +82,11 @@ export const MIGRATIONS: string[] = [
     german TEXT NOT NULL
   );
   `,
+  // Version 2: weitere Felder, die der FSRS-Algorithmus braucht
+  `
+  ALTER TABLE review_card ADD COLUMN scheduled_days INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE review_card ADD COLUMN learning_steps INTEGER NOT NULL DEFAULT 0;
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

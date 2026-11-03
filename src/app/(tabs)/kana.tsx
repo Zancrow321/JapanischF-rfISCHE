@@ -2,10 +2,12 @@ import { useState } from 'react';
 
 import { CharTile } from '@/components/char-tile';
 import { GroupSection } from '@/components/group-section';
+import { PracticeCard } from '@/components/practice-card';
 import { Screen } from '@/components/screen';
 import { Segmented } from '@/components/segmented';
 import { ThemedText } from '@/components/themed-text';
 import { CATEGORY_LABELS, kanaGroupsFor, type KanaCategory, type KanaScript } from '@/data/kana';
+import { useKanaDue } from '@/hooks/use-kana-due';
 import { useSelection } from '@/hooks/use-selection';
 
 const CATEGORIES: KanaCategory[] = ['basis', 'dakuten', 'yoon', 'erweitert'];
@@ -14,9 +16,16 @@ export default function KanaScreen() {
   const [script, setScript] = useState<KanaScript>('hiragana');
   const { active, toggle, setMany } = useSelection();
   const groups = kanaGroupsFor(script);
+  const kanaDue = useKanaDue();
 
   return (
     <Screen>
+      <PracticeCard
+        title="Üben"
+        href="/uebung/kana"
+        emptyHint="Markiere unten Zeichen, dann kannst du sie hier üben."
+        {...kanaDue}
+      />
       <Segmented
         value={script}
         onChange={setScript}
