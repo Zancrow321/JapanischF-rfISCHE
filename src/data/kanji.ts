@@ -30,3 +30,24 @@ export function kanjiGroupsByGrade(kanji: KanjiEntry[] = KANJI): KanjiGroup[] {
       items,
     }));
 }
+
+/**
+ * Bedeutungen zum Anzeigen und Abfragen: eigene Bedeutung, sonst Deutsch aus dem Wörterbuch,
+ * sonst Englisch aus KANJIDIC2.
+ */
+export function kanjiMeanings(k: KanjiEntry, override?: string | null): { meanings: string[]; lang: 'eigene' | 'de' | 'en' } {
+  if (override && override.trim()) {
+    return { meanings: override.split(/[;,]/).map((m) => m.trim()).filter(Boolean), lang: 'eigene' };
+  }
+  if (k.meaningsDe && k.meaningsDe.length > 0) return { meanings: k.meaningsDe, lang: 'de' };
+  return { meanings: k.meaningsEn.slice(0, 3), lang: 'en' };
+}
+
+/** Kurze Lesung für Abfragen: erste On-Lesung und erste Kun-Lesung, z. B. "スイ · みず". */
+export function shortReading(k: KanjiEntry): string {
+  const parts = [k.on[0], k.kun[0] ? displayReading(k.kun[0]) : undefined].filter((p): p is string => !!p);
+  return [...new Set(parts)].join(' · ');
+}
+
+/** Kun-Lesungen ohne Markierungen und ohne Doppelte (みず und みず- sind für die Anzeige gleich). */
+export const kunReadings = (k: KanjiEntry) => [...new Set(k.kun.map(displayReading))];

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
+import { KanjiDetails } from '@/components/kanji-details';
 import { Screen } from '@/components/screen';
 import { Segmented } from '@/components/segmented';
 import { ThemedText } from '@/components/themed-text';
@@ -56,11 +57,6 @@ export default function CharScreen() {
             <ThemedText type="subtitle" style={styles.reading}>
               {reading}
             </ThemedText>
-            {info?.kind === 'kanji' ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                {info.kanji.strokes} Striche · Bedeutung (englisch): {info.kanji.meaningsEn.slice(0, 3).join(', ')}
-              </ThemedText>
-            ) : null}
             {info?.kind === 'kana' && info.kana.romaji.length > 1 ? (
               <ThemedText type="small" themeColor="textSecondary">
                 auch: {info.kana.romaji.slice(1).join(', ')}
@@ -69,6 +65,8 @@ export default function CharScreen() {
           </View>
           <Button label="🔊" variant="secondary" onPress={() => speakJapanese(text)} />
         </View>
+
+        {info?.kind === 'kanji' && mode === 'ansehen' ? <KanjiDetails kanji={info.kanji} /> : null}
 
         <Segmented
           value={mode}
@@ -118,6 +116,9 @@ export default function CharScreen() {
             />
           </View>
         )}
+
+        {/* Beim Ansehen stehen Bedeutung und Beispiele oben, beim Schreiben unter dem Zeichenfeld. */}
+        {info?.kind === 'kanji' && mode !== 'ansehen' ? <KanjiDetails kanji={info.kanji} /> : null}
       </Screen>
     </>
   );

@@ -185,3 +185,22 @@ export function buildN5(rows: string[][], entries: JmdictEntry[]): { words: N5Wo
   }
   return { words, missing };
 }
+
+/**
+ * Deutsche Bedeutungen für einzelne Kanji: aus dem JMdict-Eintrag, der nur aus diesem Kanji
+ * besteht (z. B. 水 → Wasser). Bei mehreren Einträgen gewinnt der häufigste.
+ */
+export function germanForKanji(chars: string[], entries: JmdictEntry[]): Map<string, string[]> {
+  const wanted = new Set(chars);
+  const best = new Map<string, JmdictEntry>();
+  for (const e of entries) {
+    for (const k of e.kanji) {
+      if (!wanted.has(k)) continue;
+      const current = best.get(k);
+      if (!current || e.rank < current.rank) best.set(k, e);
+    }
+  }
+  const result = new Map<string, string[]>();
+  for (const [c, e] of best) result.set(c, rankGlosses(e.german).slice(0, 3));
+  return result;
+}

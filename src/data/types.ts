@@ -11,8 +11,10 @@ export type KanjiEntry = {
   freq: number | null;
   on: string[];
   kun: string[];
-  /** Englische Bedeutungen aus KANJIDIC2; deutsche kommen in Etappe 5 dazu */
+  /** Englische Bedeutungen aus KANJIDIC2 */
   meaningsEn: string[];
+  /** Deutsche Bedeutungen aus JMdict (Eintrag, der nur aus diesem Kanji besteht); kann leer sein */
+  meaningsDe?: string[];
 };
 
 /** Strichreihenfolge eines Zeichens aus KanjiVG. */

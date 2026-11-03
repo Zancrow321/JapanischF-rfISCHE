@@ -79,3 +79,17 @@ export function searchDictionary(input: string, limit = 8, entries?: DictEntry[]
     .slice(0, limit)
     .map(({ p }) => ({ written: p.entry[0], kana: p.entry[1], german: p.glosses }));
 }
+
+/** Häufige Wörter, in denen das Kanji vorkommt (das Kanji allein zählt nicht als Beispiel). */
+export function examplesFor(char: string, limit = 6, entries?: DictEntry[]): Suggestion[] {
+  const result: Suggestion[] = [];
+  // Das Wörterbuch ist nach Häufigkeit sortiert, also reichen die ersten Treffer.
+  for (const p of getPrepared(entries)) {
+    const written = p.entry[0];
+    if (written.length > 1 && written.includes(char)) {
+      result.push({ written, kana: p.entry[1], german: p.glosses });
+      if (result.length >= limit) break;
+    }
+  }
+  return result;
+}

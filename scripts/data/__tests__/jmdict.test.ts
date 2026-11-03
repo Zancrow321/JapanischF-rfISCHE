@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { buildDictionary, buildN5, parseCsv, parseJmdict, rankGlosses, splitForms } from '../jmdict.ts';
+import { buildDictionary, buildN5, germanForKanji, parseCsv, parseJmdict, rankGlosses, splitForms } from '../jmdict.ts';
 
 const xml = readFileSync(path.join(__dirname, 'fixtures/jmdict-sample.xml'), 'utf8');
 
@@ -65,5 +65,14 @@ describe('rankGlosses', () => {
     expect(
       rankGlosses(['geraten in … (z.B. ein Unwetter)', 'kommen in', 'haben (z.B. einen Unfall)', 'treffen', 'begegnen', 'sehen'])
     ).toEqual(['kommen in', 'treffen', 'begegnen', 'sehen']);
+  });
+});
+
+describe('germanForKanji', () => {
+  it('nimmt den Eintrag, der nur aus dem Kanji besteht', () => {
+    const m = germanForKanji(['水', '会', '火'], parseJmdict(xml));
+    expect(m.get('水')).toEqual(['Wasser', 'kaltes Wasser']);
+    expect(m.has('会')).toBe(false);
+    expect(m.has('火')).toBe(false);
   });
 });

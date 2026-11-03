@@ -18,7 +18,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
 
-import { buildDictionary, buildN5, parseCsv, parseJmdict } from './jmdict.ts';
+import { buildDictionary, buildN5, germanForKanji, parseCsv, parseJmdict, type JmdictEntry } from './jmdict.ts';
 import { chunkKey, kanjiVgFileName, parseKanjidic, parseKanjiVgSvg, type StrokeData } from './parsers.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
@@ -99,9 +99,7 @@ async function loadJmdictXml(): Promise<string> {
   throw lastError;
 }
 
-async function buildVocabData(): Promise<void> {
-  console.log('JMdict laden …');
-  const entries = parseJmdict(await loadJmdictXml());
+async function buildVocabData(entries: JmdictEntry[]): Promise<void> {
   const dict = buildDictionary(entries);
   console.log(`  ${entries.length} Einträge mit Deutsch, davon ${dict.length} gebräuchlich`);
   if (dict.length < 5000) throw new Error('Unerwartet wenige deutsche Einträge, Quelldatei prüfen');
@@ -140,10 +138,17 @@ async function main() {
     kanji.sort((a, b) => a.grade - b.grade || (a.freq ?? 9999) - (b.freq ?? 9999));
     console.log(`  ${kanji.length} Jōyō-Kanji gefunden`);
     if (kanji.length < 2100) throw new Error('Unerwartet wenige Jōyō-Kanji, Quelldatei prüfen');
+
+    console.log('JMdict laden …');
+    const entries = parseJmdict(await loadJmdictXml());
+    const german = germanForKanji(kanji.map((k) => k.c), entries);
+    for (const k of kanji) k.meaningsDe = german.get(k.c) ?? [];
+    console.log(`  Deutsche Bedeutung für ${german.size} von ${kanji.length} Kanji`);
+
     await mkdir(OUT_DATA, { recursive: true });
     await writeFile(path.join(OUT_DATA, 'kanji.json'), JSON.stringify(kanji));
     chars = chars.concat(kanji.map((k) => k.c));
-    await buildVocabData();
+    await buildVocabData(entries);
   }
 
   await mkdir(path.dirname(OUT_DICT_INDEX), { recursive: true });
