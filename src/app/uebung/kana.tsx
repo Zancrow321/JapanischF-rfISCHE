@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
+import { ChoiceButton, ProgressBar } from '@/components/quiz';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -314,47 +315,8 @@ function Summary({
   );
 }
 
-function ProgressBar({ value }: { value: number }) {
-  const theme = useTheme();
-  return (
-    <View style={[styles.progress, { backgroundColor: theme.backgroundElement }]}>
-      <View style={{ width: `${Math.round(value * 100)}%`, height: '100%', backgroundColor: theme.accent }} />
-    </View>
-  );
-}
-
-function ChoiceButton({
-  label,
-  large,
-  state,
-  disabled,
-  onPress,
-}: {
-  label: string;
-  large: boolean;
-  state: 'idle' | 'right' | 'wrong';
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  const theme = useTheme();
-  const borderColor = state === 'right' ? theme.success : state === 'wrong' ? theme.accent : theme.border;
-  return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.choice,
-        { borderColor, backgroundColor: theme.background, opacity: pressed ? 0.7 : 1 },
-      ]}>
-      <ThemedText style={large ? styles.choiceCharText : styles.choiceText}>{label}</ThemedText>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   block: { gap: Spacing.three },
-  progress: { height: 6, borderRadius: 3, overflow: 'hidden' },
   prompt: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -365,16 +327,6 @@ const styles = StyleSheet.create({
   bigChar: { fontSize: 112, lineHeight: 132 },
   speaker: { fontSize: 56, lineHeight: 72 },
   choices: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
-  choice: {
-    flexGrow: 1,
-    flexBasis: '45%',
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    borderRadius: Spacing.three,
-    borderWidth: 2,
-  },
-  choiceText: { fontSize: 22, lineHeight: 30 },
-  choiceCharText: { fontSize: 40, lineHeight: 52 },
   typeRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'center' },
   input: {
     flex: 1,

@@ -22,3 +22,9 @@ export type StrokeData = {
   /** Position der Strichnummern [x, y] */
   numbers: [number, number][];
 };
+
+/** Wörterbucheintrag (kompakt gespeichert): [Schreibweise oder "", Lesung in Kana, deutsche Bedeutungen mit "|" getrennt, Häufigkeitsrang] */
+export type DictEntry = [written: string, reading: string, german: string, rank: number];
+
+/** Wort der JLPT-N5-Grundliste: [Schreibweise oder "", Lesung, deutsche Bedeutungen mit "|"] */
+export type N5Word = [written: string, reading: string, german: string];
