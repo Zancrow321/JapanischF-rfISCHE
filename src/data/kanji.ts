@@ -3,6 +3,14 @@ import type { KanjiEntry } from './types';
 
 export { KANJI };
 
+/**
+ * KANJIDIC2 schreibt Kun-Lesungen mit Markierungen: "い.きる" (Okurigana nach dem Punkt),
+ * "ひと-" (Vorsilbe). Für die Anzeige werden diese Zeichen entfernt.
+ */
+export function displayReading(reading: string): string {
+  return reading.replace(/[.\-]/g, '');
+}
+
 export const kanjiItemId = (k: KanjiEntry) => `kanji:${k.c}`;
 
 export type KanjiGroup = { id: string; label: string; items: KanjiEntry[] };

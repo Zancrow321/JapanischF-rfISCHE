@@ -5,7 +5,7 @@ import { CharTile } from '@/components/char-tile';
 import { GroupSection } from '@/components/group-section';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
-import { KANJI, kanjiGroupsByGrade, kanjiItemId } from '@/data/kanji';
+import { displayReading, KANJI, kanjiGroupsByGrade, kanjiItemId } from '@/data/kanji';
 import { useSelection } from '@/hooks/use-selection';
 
 /** Große Gruppen erst auf Wunsch ganz anzeigen, damit der Bildschirm schnell bleibt. */
@@ -47,7 +47,7 @@ export default function KanjiScreen() {
               <CharTile
                 key={k.c}
                 char={k.c}
-                caption={(k.kun[0] ?? k.on[0])?.slice(0, 6)}
+                caption={displayReading(k.kun[0] ?? k.on[0] ?? '').slice(0, 6)}
                 active={active.has(kanjiItemId(k))}
                 onPress={() => toggle(kanjiItemId(k))}
               />
