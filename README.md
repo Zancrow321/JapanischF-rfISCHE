@@ -40,5 +40,6 @@ Auf GitHub läuft das automatisch über den Workflow „Lerndaten erzeugen“.
 - **KANJIDIC2** – Lesungen und Bedeutungen der Kanji, © Electronic Dictionary Research and Development Group, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), <https://www.edrdg.org/>
 - **JMdict** – deutsch-japanisches Wörterbuch für die Vokabel-Vorschläge, © Electronic Dictionary Research and Development Group, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), <https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project>
 - **JLPT-N5-Wortliste** – aus [open-anki-jlpt-decks](https://github.com/jamsinclair/open-anki-jlpt-decks) (MIT), basierend auf den Listen von Jonathan Waller (tanos.co.uk, CC BY); die deutschen Bedeutungen stammen aus JMdict
+- **DotGothic16** – Pixelschrift des Retro-Designs, © Fontworks Inc., [SIL Open Font License 1.1](https://openfontlicense.org), über [@expo-google-fonts/dotgothic16](https://github.com/expo/google-fonts)
 
 Die erzeugten Daten in `assets/data/` stehen unter denselben Lizenzen.
