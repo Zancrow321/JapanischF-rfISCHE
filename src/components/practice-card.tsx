@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 
 type Props = {
   title: string;
@@ -20,7 +20,7 @@ export function PracticeCard({ title, selected, due, fresh, href, emptyHint }: P
   const theme = useTheme();
   const todo = due + fresh;
   return (
-    <View style={[styles.card, { backgroundColor: theme.accentSoft }]}>
+    <View style={[styles.card, windowStyle(theme, theme.accentSoft)]}>
       <ThemedText type="smallBold">{title}</ThemedText>
       {selected === 0 ? (
         <ThemedText type="small">{emptyHint}</ThemedText>

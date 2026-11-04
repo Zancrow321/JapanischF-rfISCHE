@@ -12,7 +12,7 @@ import { getCards, saveReview } from '@/db/reviews';
 import { getSetting } from '@/db/settings';
 import { getLists, getWords, vocabItemId, vocabListItemId } from '@/db/vocab';
 import { useSelection } from '@/hooks/use-selection';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { pickSessionKana } from '@/learn/kana-quiz';
 import { reviewCard, type StoredCard } from '@/learn/srs';
 import {
@@ -184,7 +184,7 @@ function QuestionView({
         {position} / {total} · {prompt}
       </ThemedText>
 
-      <View style={[styles.prompt, { backgroundColor: theme.backgroundElement }]}>
+      <View style={[styles.prompt, windowStyle(theme, theme.backgroundElement)]}>
         {deJa ? (
           <ThemedText style={styles.germanPrompt}>{word.german}</ThemedText>
         ) : (
@@ -220,7 +220,7 @@ function QuestionView({
 
       {type === 'selbst' && !answer ? (
         revealed ? (
-          <View style={[styles.feedback, { backgroundColor: theme.backgroundElement }]}>
+          <View style={[styles.feedback, windowStyle(theme, theme.backgroundElement)]}>
             <ThemedText style={styles.germanAnswer}>{word.german}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {allForms(word).join(' · ')}
@@ -236,7 +236,7 @@ function QuestionView({
       ) : null}
 
       {answer ? (
-        <View style={[styles.feedback, { backgroundColor: answer.correct ? theme.successSoft : theme.accentSoft }]}>
+        <View style={[styles.feedback, windowStyle(theme, answer.correct ? theme.successSoft : theme.accentSoft)]}>
           <ThemedText type="smallBold">
             {answer.correct
               ? 'Richtig!'

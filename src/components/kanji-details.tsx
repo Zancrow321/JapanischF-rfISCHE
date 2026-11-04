@@ -11,7 +11,7 @@ import type { KanjiEntry } from '@/data/types';
 import { getMeaningOverride, setMeaningOverride } from '@/db/meanings';
 import { addWord, createList, getLists, joinGerman, vocabListItemId, type VocabList } from '@/db/vocab';
 import { useSelection } from '@/hooks/use-selection';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { speakJapanese } from '@/lib/speech';
 import { examplesFor, type Suggestion } from '@/vocab/dictionary';
 import { allForms } from '@/vocab/script';
@@ -48,7 +48,7 @@ export function KanjiDetails({ kanji }: { kanji: KanjiEntry }) {
 
   return (
     <View style={styles.block}>
-      <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+      <View style={[styles.card, windowStyle(theme, theme.backgroundElement)]}>
         <ThemedText type="smallBold">
           Bedeutung{lang === 'en' ? ' (nur englisch vorhanden)' : lang === 'eigene' ? ' (deine eigene)' : ''}
         </ThemedText>
@@ -140,7 +140,7 @@ function ExampleRow({ example }: { example: Suggestion }) {
   }
 
   return (
-    <View style={[styles.example, { backgroundColor: theme.backgroundElement }]}>
+    <View style={[styles.example, windowStyle(theme, theme.backgroundElement)]}>
       <View style={styles.exampleMain}>
         <Pressable accessibilityRole="button" aria-label={`${example.written} anhören`} onPress={() => speakJapanese(example.kana)}>
           <ThemedText style={styles.exampleWord}>{example.written}</ThemedText>

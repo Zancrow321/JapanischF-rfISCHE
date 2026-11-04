@@ -13,7 +13,7 @@ import { Spacing } from '@/constants/theme';
 import { loadN5 } from '@/data/generated/dict-index';
 import { addN5List, createList, N5_LIST_NAME, vocabListItemId } from '@/db/vocab';
 import { useSelection } from '@/hooks/use-selection';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { useVocabOverview } from '@/hooks/use-vocab';
 import { useVocabScript } from '@/hooks/use-vocab-script';
 import { VOCAB_SCRIPTS } from '@/vocab/script';
@@ -87,7 +87,7 @@ export default function VocabScreen() {
         {lists.map((l) => {
           const on = active.has(vocabListItemId(l.id));
           return (
-            <View key={l.id} style={[styles.listRow, { backgroundColor: theme.backgroundElement }]}>
+            <View key={l.id} style={[styles.listRow, windowStyle(theme, theme.backgroundElement)]}>
               <Pressable
                 accessibilityRole="link"
                 aria-label={`Liste ${l.name} öffnen`}

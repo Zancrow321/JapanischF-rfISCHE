@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { DesignPicker } from '@/components/design-picker';
 import { KanaPicker } from '@/components/pickers/kana-picker';
 import { KanjiPicker } from '@/components/pickers/kanji-picker';
 import { Screen } from '@/components/screen';
@@ -12,6 +13,8 @@ export default function SettingsScreen() {
   const [tab, setTab] = useState<Tab>('hiragana');
   return (
     <Screen>
+      <ThemedText type="smallBold">Design</ThemedText>
+      <DesignPicker />
       <ThemedText type="smallBold">Welche Schriftzeichen lernst du gerade?</ThemedText>
       <Segmented
         value={tab}

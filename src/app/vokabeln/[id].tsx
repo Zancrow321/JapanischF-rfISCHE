@@ -19,7 +19,7 @@ import {
   type Vocab,
   type VocabList,
 } from '@/db/vocab';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { useVocabScript } from '@/hooks/use-vocab-script';
 import { romajiToHiragana } from '@/lib/romaji';
 import { speakJapanese } from '@/lib/speech';
@@ -185,7 +185,7 @@ function WordForm({
   const inputStyle = [quizStyles.input, styles.formInput, { color: theme.text, borderColor: theme.border }];
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+    <View style={[styles.card, windowStyle(theme, theme.backgroundElement)]}>
       <ThemedText type="smallBold">{editing ? 'Wort bearbeiten' : 'Wort hinzufügen'}</ThemedText>
       <TextInput
         value={form.german}

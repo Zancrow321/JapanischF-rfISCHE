@@ -8,7 +8,7 @@ import { ALL_KANA } from '@/data/kana';
 import { KANJI, kanjiItemId } from '@/data/kanji';
 import { charHref } from '@/data/lookup';
 import { useSelection } from '@/hooks/use-selection';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 
 type Props = {
   title: string;
@@ -28,7 +28,7 @@ export function SelectedChars({ title, mode = 'ansehen' }: Props) {
 
   if (groups.length === 0) {
     return (
-      <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+      <View style={[styles.card, windowStyle(theme, theme.backgroundElement)]}>
         <ThemedText>Du hast noch keine Schriftzeichen ausgewählt.</ThemedText>
         <Button label="In den Einstellungen auswählen" onPress={() => router.push('/einstellungen')} />
       </View>
