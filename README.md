@@ -10,6 +10,10 @@ npm install
 npm start        # danach QR-Code mit der App „Expo Go“ scannen, oder „w“ für den Browser
 ```
 
+## Aufs iPhone
+
+Über Expo und TestFlight, ohne Mac: siehe [docs/iphone-testflight.md](docs/iphone-testflight.md).
+
 ## Prüfen
 
 ```bash
