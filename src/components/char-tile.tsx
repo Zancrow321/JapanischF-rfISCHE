@@ -25,7 +25,8 @@ export function CharTile({ char, caption, active, onPress, onLongPress }: Props)
       style={({ pressed }) => [
         styles.tile,
         {
-          backgroundColor: active ? theme.accentSoft : theme.backgroundElement,
+          // Im Retro-Design sind Fenster und Markierung beide blau, daher dort ein helleres Blau.
+          backgroundColor: active ? (theme.id === 'retro' ? theme.backgroundSelected : theme.accentSoft) : theme.backgroundElement,
           borderColor: active ? theme.accent : 'transparent',
           opacity: pressed ? 0.7 : 1,
         },

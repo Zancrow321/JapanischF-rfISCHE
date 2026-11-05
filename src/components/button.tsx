@@ -31,7 +31,7 @@ export function Button({
           opacity: disabled ? 0.4 : pressed ? 0.7 : 1,
         },
       ]}>
-      <ThemedText type="smallBold" style={{ color: primary ? '#ffffff' : theme.text }}>
+      <ThemedText type="smallBold" style={{ color: primary ? theme.onAccent : theme.text }}>
         {label}
       </ThemedText>
     </Pressable>

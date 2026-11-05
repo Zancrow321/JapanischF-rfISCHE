@@ -13,7 +13,7 @@ import type { KanjiEntry } from '@/data/types';
 import { getMeaningOverrides } from '@/db/meanings';
 import { getCards, saveReview } from '@/db/reviews';
 import { useSelection } from '@/hooks/use-selection';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { KANA_WRITE_MODE, pickSessionKana } from '@/learn/kana-quiz';
 import { KANJI_WRITE_MODE } from '@/learn/kanji-quiz';
 import { gradeForWriting, reviewCard, type StoredCard } from '@/learn/srs';
@@ -214,7 +214,7 @@ function WriteQuestion({
         <View
           style={[
             styles.feedback,
-            { backgroundColor: !outcome.gaveUp && outcome.mistakes === 0 ? theme.successSoft : theme.accentSoft },
+            windowStyle(theme, !outcome.gaveUp && outcome.mistakes === 0 ? theme.successSoft : theme.accentSoft),
           ]}>
           <ThemedText type="smallBold">
             {outcome.gaveUp

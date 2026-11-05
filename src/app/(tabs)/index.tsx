@@ -9,7 +9,7 @@ import { KANJI, kanjiItemId } from '@/data/kanji';
 import { useKanaDue, useKanjiDue } from '@/hooks/use-kana-due';
 import { useSelection } from '@/hooks/use-selection';
 import { useStats } from '@/hooks/use-stats';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { useVocabOverview } from '@/hooks/use-vocab';
 import { KANA_WRITE_MODE } from '@/learn/kana-quiz';
 import { KANJI_MODE } from '@/learn/kanji-quiz';
@@ -62,7 +62,7 @@ export default function StartScreen() {
           value={stats && stats.reviewsToday > 0 ? `${Math.round((stats.correctToday / stats.reviewsToday) * 100)} %` : '–'}
         />
       </View>
-      <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
+      <View style={[styles.card, windowStyle(theme, theme.backgroundElement)]}>
         <ThemedText type="small">
           Ausgewählt: {kanaActive} von {ALL_KANA.length} Kana, {kanjiActive} von {KANJI.length} Kanji
         </ThemedText>
@@ -77,7 +77,7 @@ export default function StartScreen() {
 function Stat({ label, value }: { label: string; value: string }) {
   const theme = useTheme();
   return (
-    <View style={[styles.stat, { backgroundColor: theme.backgroundElement }]}>
+    <View style={[styles.stat, windowStyle(theme, theme.backgroundElement)]}>
       <ThemedText style={styles.statValue}>{value}</ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {label}

@@ -15,11 +15,12 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: theme.accent,
         tabBarInactiveTintColor: theme.textSecondary,
-        tabBarLabelStyle: { fontSize: 10, lineHeight: 14 },
+        tabBarLabelStyle: { fontSize: 10, lineHeight: 14, ...(theme.font ? { fontFamily: theme.font } : null) },
         tabBarItemStyle: { paddingHorizontal: 0 },
         tabBarStyle: { backgroundColor: theme.background, borderTopColor: theme.border },
         headerStyle: { backgroundColor: theme.background },
         headerTintColor: theme.text,
+        headerTitleStyle: theme.font ? { fontFamily: theme.font, fontWeight: 'normal' } : undefined,
       }}>
       <Tabs.Screen
         name="index"

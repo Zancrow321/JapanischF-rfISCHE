@@ -12,7 +12,7 @@ import { ALL_KANA, type Kana } from '@/data/kana';
 import { charHref } from '@/data/lookup';
 import { getCards, saveReview } from '@/db/reviews';
 import { useSelection } from '@/hooks/use-selection';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import {
   buildQuestions,
   isRomajiCorrect,
@@ -176,14 +176,14 @@ function QuestionView({ question, position, total, answer, onAnswer, onNext }: Q
           accessibilityRole="button"
           aria-label="Nochmal anhören"
           onPress={() => speakJapanese(kana.char)}
-          style={[styles.prompt, { backgroundColor: theme.backgroundElement }]}>
+          style={[styles.prompt, windowStyle(theme, theme.backgroundElement)]}>
           <ThemedText style={styles.speaker}>🔊</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Tippen zum Anhören
           </ThemedText>
         </Pressable>
       ) : (
-        <View style={[styles.prompt, { backgroundColor: theme.backgroundElement }]}>
+        <View style={[styles.prompt, windowStyle(theme, theme.backgroundElement)]}>
           <ThemedText style={styles.bigChar}>{kana.char}</ThemedText>
         </View>
       )}
@@ -268,7 +268,7 @@ function Feedback({
     <View
       style={[
         styles.feedback,
-        { backgroundColor: correct ? theme.successSoft : theme.accentSoft },
+        windowStyle(theme, correct ? theme.successSoft : theme.accentSoft),
       ]}>
       <ThemedText type="smallBold">
         {correct ? 'Richtig!' : typed ? `Leider falsch, du hast „${typed}“ getippt.` : 'Leider falsch.'}

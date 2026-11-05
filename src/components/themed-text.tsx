@@ -11,7 +11,11 @@ export type ThemedTextProps = TextProps & {
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
 
-  return <Text style={[{ color: theme[themeColor ?? 'text'] }, styles[type], style]} {...rest} />;
+  // Große Lernzeichen (Abfrage, Zeichenseite) bleiben in der normalen Schrift, damit die Striche
+  // stimmen. Die Pixelschrift des Retro-Designs hat nur eine Stärke; fett würde sonst nachgeahmt.
+  const learningGlyph = type !== 'title' && (StyleSheet.flatten(style)?.fontSize ?? 0) >= 36;
+  const font = theme.font && !learningGlyph ? { fontFamily: theme.font, fontWeight: 'normal' as const } : null;
+  return <Text style={[{ color: theme[themeColor ?? 'text'] }, styles[type], style, font]} {...rest} />;
 }
 
 const styles = StyleSheet.create({

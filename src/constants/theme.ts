@@ -1,37 +1,10 @@
-/** Farben der App für hellen und dunklen Modus. Akzent: Rot wie der Hinomaru. */
+/** Farben, Abstände und Schriften der App. Die Designs selbst stehen in designs.ts. */
 
 import '@/global.css';
 
 import { Platform } from 'react-native';
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    accent: '#C8102E',
-    success: '#1F8A4C',
-    successSoft: '#DFF3E6',
-    accentSoft: '#FBE3E6',
-    border: '#D9D9E0',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    accent: '#FF5A6E',
-    success: '#4CC38A',
-    successSoft: '#13301F',
-    accentSoft: '#3B1A20',
-    border: '#3A3D42',
-  },
-} as const;
-
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export * from './designs';
 
 export const Fonts = Platform.select({
   ios: {

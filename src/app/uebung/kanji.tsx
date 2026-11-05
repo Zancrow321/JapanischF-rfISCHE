@@ -14,7 +14,7 @@ import type { KanjiEntry } from '@/data/types';
 import { getMeaningOverrides } from '@/db/meanings';
 import { getCards, saveReview } from '@/db/reviews';
 import { useSelection } from '@/hooks/use-selection';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { pickSessionKana } from '@/learn/kana-quiz';
 import {
   buildKanjiQuestions,
@@ -178,7 +178,7 @@ function QuestionView({
       <ThemedText type="small" themeColor="textSecondary">
         {position} / {total} · {PROMPTS[type]}
       </ThemedText>
-      <View style={[styles.prompt, { backgroundColor: theme.backgroundElement }]}>
+      <View style={[styles.prompt, windowStyle(theme, theme.backgroundElement)]}>
         {type === 'finden' ? (
           <ThemedText style={styles.meaningPrompt}>{meaningText(kanji, overrides)}</ThemedText>
         ) : (
@@ -198,7 +198,7 @@ function QuestionView({
         ))}
       </View>
       {answer ? (
-        <View style={[styles.feedback, { backgroundColor: answer.correct ? theme.successSoft : theme.accentSoft }]}>
+        <View style={[styles.feedback, windowStyle(theme, answer.correct ? theme.successSoft : theme.accentSoft)]}>
           <ThemedText type="smallBold">{answer.correct ? 'Richtig!' : 'Leider falsch.'}</ThemedText>
           <View style={styles.answerRow}>
             <ThemedText style={styles.answerChar}>{kanji.c}</ThemedText>

@@ -10,7 +10,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { displayReading } from '@/data/kanji';
 import { lookupChar } from '@/data/lookup';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, windowStyle } from '@/hooks/use-theme';
 import { speakJapanese } from '@/lib/speech';
 import { StrokeAnimation } from '@/writing/stroke-animation';
 import { useCharStrokes } from '@/writing/use-char-strokes';
@@ -87,7 +87,7 @@ export default function CharScreen() {
             ))}
           </View>
         ) : result !== null ? (
-          <View style={[styles.result, { backgroundColor: result === 0 ? theme.successSoft : theme.accentSoft }]}>
+          <View style={[styles.result, windowStyle(theme, result === 0 ? theme.successSoft : theme.accentSoft)]}>
             <ThemedText type="smallBold">
               {result === 0 ? 'Perfekt, alle Striche richtig!' : `Geschafft, mit ${result} ${result === 1 ? 'Fehler' : 'Fehlern'}.`}
             </ThemedText>
