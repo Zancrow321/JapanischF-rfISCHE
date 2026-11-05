@@ -41,8 +41,7 @@ App in der Cloud, du brauchst keinen Mac. Voraussetzung ist ein Konto im Apple D
    Deine Apple-Zugangsdaten gibst du nur hier selbst ein. Expo speichert die Zertifikate in deinem
    Expo-Konto, damit spätere Builds ohne diese Fragen laufen.
 
-4. Nach dem ersten Bau steht in `app.json` eine neue Zeile mit `projectId`. Schick sie Claude, dann kommt
-   sie ins Repository, und die Frage „Create an EAS project?“ fällt künftig weg.
+4. Die Projekt-Kennung (`projectId`) steht schon in `app.json`. Die Frage „Create an EAS project?“ kommt deshalb nicht mehr.
 
 5. Warten: Der Bau dauert etwa 15 bis 30 Minuten, den Fortschritt siehst du auf expo.dev. Danach lädt Expo
    die App zu Apple hoch. Apple verarbeitet sie noch 5 bis 15 Minuten und schickt dir eine E-Mail.

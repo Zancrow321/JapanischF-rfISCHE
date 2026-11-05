@@ -51,6 +51,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "basilsik",
+    "extra": {
+      "eas": {
+        "projectId": "b8050063-0279-4300-8206-c0cedcf62964"
+      }
     }
   }
 }
