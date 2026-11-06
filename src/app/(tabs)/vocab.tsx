@@ -23,7 +23,7 @@ export default function VocabScreen() {
   const db = useSQLiteContext();
   const theme = useTheme();
   const [script, setScript] = useVocabScript();
-  const { lists, deJa, jaDe, reload } = useVocabOverview();
+  const { lists, deJa, jaDe, write, reload } = useVocabOverview();
   const { active, toggle, setMany } = useSelection();
   const [newName, setNewName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -60,7 +60,9 @@ export default function VocabScreen() {
         <ThemedText type="small" themeColor="textSecondary">
           {script === 'kanji'
             ? 'Wörter ohne Kanji erscheinen in Kana. Beim Antworten kannst du immer auch Romaji tippen.'
-            : 'So werden die Wörter gezeigt und abgefragt. Beim Antworten kannst du immer auch Romaji tippen.'}
+            : script === 'romaji'
+              ? 'So werden die Wörter gezeigt und abgefragt. Beim Schreiben mit dem Finger nimmst du Hiragana.'
+              : 'So werden die Wörter gezeigt und abgefragt. Beim Antworten kannst du immer auch Romaji tippen.'}
         </ThemedText>
       </View>
 
@@ -75,6 +77,12 @@ export default function VocabScreen() {
         href={{ pathname: '/uebung/vokabeln', params: { richtung: 'ja-de' } }}
         emptyHint="Sobald eine Liste Wörter hat, kannst du hier üben."
         {...jaDe}
+      />
+      <PracticeCard
+        title="Vokabeln schreiben"
+        href="/uebung/vokabeln-schreiben"
+        emptyHint="Sobald eine Liste Wörter hat, kannst du sie hier mit Schriftzeichen schreiben."
+        {...write}
       />
 
       <View style={styles.section}>
