@@ -7,6 +7,7 @@ import { getLists, getWords, vocabItemId, vocabListItemId, type Vocab, type Voca
 import { countDue } from '@/learn/kana-quiz';
 import type { StoredCard } from '@/learn/srs';
 import { VOCAB_DE_JA, VOCAB_JA_DE } from '@/learn/vocab-quiz';
+import { VOCAB_WRITE_MODE } from '@/learn/vocab-write';
 
 import { useSelection } from './use-selection';
 
@@ -33,6 +34,7 @@ export function useVocabOverview() {
         const cards = {
           [VOCAB_DE_JA]: await getCards(db, VOCAB_DE_JA),
           [VOCAB_JA_DE]: await getCards(db, VOCAB_JA_DE),
+          [VOCAB_WRITE_MODE]: await getCards(db, VOCAB_WRITE_MODE),
         };
         if (!cancelled) setData({ lists, words, cards, at: Date.now() });
       })();
@@ -54,6 +56,6 @@ export function useVocabOverview() {
       selected: activeWords.length,
       ...countDue(activeWords, data.cards[mode] ?? new Map(), data.at),
     });
-    return { lists: data.lists, deJa: due(VOCAB_DE_JA), jaDe: due(VOCAB_JA_DE), reload };
+    return { lists: data.lists, deJa: due(VOCAB_DE_JA), jaDe: due(VOCAB_JA_DE), write: due(VOCAB_WRITE_MODE), reload };
   }, [active, data, reload]);
 }
